@@ -2,7 +2,7 @@ import { aws_route53_targets } from 'aws-cdk-lib';
 import { Certificate, CertificateValidation } from 'aws-cdk-lib/aws-certificatemanager';
 import { IVpc } from 'aws-cdk-lib/aws-ec2';
 import { ApplicationListener, ApplicationLoadBalancer, ApplicationProtocol, ListenerAction, SslPolicy } from 'aws-cdk-lib/aws-elasticloadbalancingv2';
-import { ARecord, IHostedZone, RecordTarget } from 'aws-cdk-lib/aws-route53';
+import { ARecord, AaaaRecord, IHostedZone, RecordTarget } from 'aws-cdk-lib/aws-route53';
 import { Construct } from 'constructs';
 
 interface LoadbalancerConstructProps {
@@ -31,6 +31,11 @@ export class LoadBalancerConstruct extends Construct {
 
   private setupDnsRecords() {
     new ARecord(this, 'a', {
+      target: RecordTarget.fromAlias(new aws_route53_targets.LoadBalancerTarget(this.loadbalancer)),
+      zone: this.props.hostedzone,
+      recordName: 'lb',
+    });
+    new AaaaRecord(this, 'aaaa', {
       target: RecordTarget.fromAlias(new aws_route53_targets.LoadBalancerTarget(this.loadbalancer)),
       zone: this.props.hostedzone,
       recordName: 'lb',
