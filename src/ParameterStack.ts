@@ -23,5 +23,23 @@ export class ParameterStack extends Stack {
       parameterName: Statics.ssmDbSecretArn,
     });
 
+
+    this.setDatabaseCredentials();
+
   }
+
+  setDatabaseCredentials() {
+    const dbCredentials = new Secret(this, 'db-credentials', {
+      generateSecretString: {
+        secretStringTemplate: JSON.stringify({ username: 'postgres' }),
+        generateStringKey: 'password',
+        excludePunctuation: true,
+      },
+    });
+    new StringParameter(this, 'db-credentials-arn', {
+      stringValue: dbCredentials.secretArn,
+      parameterName: Statics.ssmDbCredentialsArn,
+    });
+  }
+
 }
