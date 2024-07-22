@@ -1,13 +1,9 @@
-# openforms-test-temp
-Tijdelijke repo om het deployen van Open Forms mee te testen en vast te leggen. Het idee is dat deze repo binnen korte tijd ook weer verwijderd zal worden.
+# Zaakgerichtwerken demo
 
-https://github.com/GemeenteNijmegen/um-demo goed om mee te nemen in uitproberen opzetten OpenForms. Vooral specifieke tags
+Deze repo bevat een minimale demo omgeving met de maykin implementaties van de zaakgerichtwerken componenten.
+Doel is om meer grip te krijgen op de APIs en de werking van het ecosysteem.
 
-Poging om 
-* Image ophalen uit dockerhub https://hub.docker.com/r/openformulieren/open-forms
-* Uitzoeken welke environment variabelen meegegeven moeten worden aan de images
-* Postgres RDS Service 
-* Intern VPC netwerk
-* Draaien van images in ECS of Fargate
-* 
-s
+
+## Overzicht
+Ik heb deze plaat in elkaar gezet om de verhoudingen tussen de componenten duidelijk te krijgen.
+![Overzicht containers](./docs/containers.drawio.png)
