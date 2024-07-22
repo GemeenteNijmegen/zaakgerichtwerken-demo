@@ -43,7 +43,30 @@
     },
     "bundle": {
       "name": "bundle",
-      "description": "Prepare assets"
+      "description": "Prepare assets",
+      "steps": [
+        {
+          "spawn": "bundle:lambdas/postgres/postgres.lambda"
+        }
+      ]
+    },
+    "bundle:lambdas/postgres/postgres.lambda": {
+      "name": "bundle:lambdas/postgres/postgres.lambda",
+      "description": "Create a JavaScript bundle from src/lambdas/postgres/postgres.lambda.ts",
+      "steps": [
+        {
+          "exec": "esbuild --bundle src/lambdas/postgres/postgres.lambda.ts --target=\"node20\" --platform=\"node\" --outfile=\"assets/lambdas/postgres/postgres.lambda/index.js\" --tsconfig=\"tsconfig.dev.json\" --external:@aws-sdk/*"
+        }
+      ]
+    },
+    "bundle:lambdas/postgres/postgres.lambda:watch": {
+      "name": "bundle:lambdas/postgres/postgres.lambda:watch",
+      "description": "Continuously update the JavaScript bundle from src/lambdas/postgres/postgres.lambda.ts",
+      "steps": [
+        {
+          "exec": "esbuild --bundle src/lambdas/postgres/postgres.lambda.ts --target=\"node20\" --platform=\"node\" --outfile=\"assets/lambdas/postgres/postgres.lambda/index.js\" --tsconfig=\"tsconfig.dev.json\" --external:@aws-sdk/* --watch"
+        }
+      ]
     },
     "clobber": {
       "name": "clobber",
@@ -277,13 +300,13 @@
       },
       "steps": [
         {
-          "exec": "npx npm-check-updates@16 --upgrade --target=minor --peer --dep=dev,peer,prod,optional --filter=@gemeentenijmegen/aws-constructs,@gemeentenijmegen/projen-project-type,@types/jest,esbuild,eslint-import-resolver-typescript,eslint-plugin-import,jest,projen,ts-jest,ts-node,typescript"
+          "exec": "npx npm-check-updates@16 --upgrade --target=minor --peer --dep=dev,peer,prod,optional --filter=@gemeentenijmegen/aws-constructs,@gemeentenijmegen/projen-project-type,@types/jest,@types/pg,esbuild,eslint-import-resolver-typescript,eslint-plugin-import,jest,projen,ts-jest,ts-node,typescript,@aws/pdk,pg"
         },
         {
           "exec": "yarn install --check-files"
         },
         {
-          "exec": "yarn upgrade @gemeentenijmegen/aws-constructs @gemeentenijmegen/projen-project-type @types/jest @types/node @typescript-eslint/eslint-plugin @typescript-eslint/parser aws-cdk esbuild eslint-import-resolver-typescript eslint-plugin-import eslint jest jest-junit projen standard-version ts-jest ts-node typescript aws-cdk-lib constructs"
+          "exec": "yarn upgrade @gemeentenijmegen/aws-constructs @gemeentenijmegen/projen-project-type @types/jest @types/node @types/pg @typescript-eslint/eslint-plugin @typescript-eslint/parser aws-cdk esbuild eslint-import-resolver-typescript eslint-plugin-import eslint jest jest-junit projen standard-version ts-jest ts-node typescript @aws/pdk aws-cdk-lib constructs pg"
         },
         {
           "exec": "npx projen"

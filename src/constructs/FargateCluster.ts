@@ -23,6 +23,9 @@ export class FargateCluster extends Construct {
     const cluster = new Cluster(this, 'cluster', {
       vpc: props.vpc,
       enableFargateCapacityProviders: true, // Allows usage of spot instances
+      defaultCloudMapNamespace: {
+        name: 'zgw.local',
+      },
     });
 
     return cluster;

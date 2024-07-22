@@ -3,9 +3,12 @@ import { PermissionsBoundaryAspect } from '@gemeentenijmegen/aws-constructs';
 import {
   Stack, StackProps, Aspects,
 } from 'aws-cdk-lib';
+import { Port } from 'aws-cdk-lib/aws-ec2';
 import { Construct } from 'constructs';
 import { DnsConstruct } from './constructs/DnsConstruct';
+import { OpenNotificatiesService } from './constructs/OpenNotificatiesService';
 import { OpenZaakService } from './constructs/OpenZaakService';
+import { RabbitMQService } from './constructs/RabbitMqService';
 import { VpcConstruct } from './constructs/VpcConstruct';
 import { ZgwCluster } from './constructs/ZgwCluster';
 import { ZgwService } from './constructs/ZgwService';
@@ -41,6 +44,9 @@ export class ContainerClusterStack extends Stack {
     this.addHelloWorldService();
 
     this.addOpenZaakService();
+    const notificaties = this.addOpenNotificatiesService();
+    const rabbitmq = this.addRabbitMqService();
+    rabbitmq.fargateService.connections.allowFrom(notificaties.fargateService.connections, Port.tcp(5672));
   }
 
 
@@ -64,6 +70,27 @@ export class ContainerClusterStack extends Stack {
       zgwCluster: this.zgwCluster,
       desiredtaskcount: 1,
       priority: 12,
+      useSpotInstances: true,
+    });
+  }
+
+  addOpenNotificatiesService() {
+    return new OpenNotificatiesService(this, 'open-notificaties', {
+      containerImage: '',
+      containerPort: 8090,
+      path: 'open-notificaties',
+      zgwCluster: this.zgwCluster,
+      desiredtaskcount: 1,
+      priority: 13,
+      useSpotInstances: true,
+    });
+  }
+
+  addRabbitMqService() {
+    return new RabbitMQService(this, 'rabbitmq', {
+      zgwCluster: this.zgwCluster,
+      desiredtaskcount: 1,
+      useSpotInstances: true,
     });
   }
 

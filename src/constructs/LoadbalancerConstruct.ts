@@ -46,6 +46,9 @@ export class LoadBalancerConstruct extends Construct {
     return new ApplicationLoadBalancer(this, 'alb', {
       vpc: props.vpc,
       internetFacing: true,
+      vpcSubnets: {
+        subnets: props.vpc.publicSubnets, // Loadbalancer should be in public subnets to be reachable from the internet
+      },
     });
   }
 

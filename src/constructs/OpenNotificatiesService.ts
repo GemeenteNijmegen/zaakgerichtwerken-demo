@@ -4,7 +4,7 @@ import {
 } from 'aws-cdk-lib';
 import { Port, SecurityGroup } from 'aws-cdk-lib/aws-ec2';
 import { ContainerDependencyCondition } from 'aws-cdk-lib/aws-ecs';
-import { ListenerCondition } from 'aws-cdk-lib/aws-elasticloadbalancingv2';
+import { ApplicationProtocol, ListenerCondition } from 'aws-cdk-lib/aws-elasticloadbalancingv2';
 import { Effect, PolicyStatement } from 'aws-cdk-lib/aws-iam';
 import { Secret } from 'aws-cdk-lib/aws-secretsmanager';
 import { StringParameter } from 'aws-cdk-lib/aws-ssm';
@@ -12,7 +12,7 @@ import { Construct } from 'constructs';
 import { ZgwCluster } from './ZgwCluster';
 import { Statics } from '../Statics';
 
-export interface ZgwServiceProps {
+export interface OpenNotificatiesServiceProps {
 
   /**
    * The cluster on which the service is deployed
@@ -61,14 +61,14 @@ export interface ZgwServiceProps {
  * - creates a log group for the service
  * - exposes a single container port to the loadbalancer over http
  */
-export class OpenZaakService extends Construct {
+export class OpenNotificatiesService extends Construct {
 
   readonly logGroupArn: string;
   readonly fargateService: ecs.FargateService;
 
-  private readonly props: ZgwServiceProps;
+  private readonly props: OpenNotificatiesServiceProps;
 
-  constructor(scope: Construct, id: string, props: ZgwServiceProps) {
+  constructor(scope: Construct, id: string, props: OpenNotificatiesServiceProps) {
     super(scope, id);
     this.props = props;
 
@@ -89,10 +89,11 @@ export class OpenZaakService extends Construct {
    * @param service
    * @param props
    */
-  private setupLoadbalancerTarget(service: ecs.FargateService, props: ZgwServiceProps) {
+  private setupLoadbalancerTarget(service: ecs.FargateService, props: OpenNotificatiesServiceProps) {
     const pathWithSlash = `/${props.path}`;
     props.zgwCluster.alb.listener.addTargets(this.node.id, {
       port: props.containerPort,
+      protocol: ApplicationProtocol.HTTP,
       targets: [service],
       conditions: [
         ListenerCondition.pathPatterns([pathWithSlash + '/*']),
@@ -100,7 +101,7 @@ export class OpenZaakService extends Construct {
       priority: props.priority,
       healthCheck: {
         enabled: true,
-        path: '/open-zaak/admin',
+        path: '/open-notificaties/admin',
         healthyHttpCodes: '200,400', // See this acticle for allowing the 400 response... https://medium.com/django-unleashed/djangos-allowed-hosts-in-aws-ecs-369959f2c2ab
         healthyThresholdCount: 2,
         unhealthyThresholdCount: 6,
@@ -129,30 +130,33 @@ export class OpenZaakService extends Construct {
   private setupTaskDefinition(logGroup: logs.ILogGroup) {
 
     const environment = {
-      DJANGO_SETTINGS_MODULE: 'openzaak.conf.docker',
-      DB_NAME: Statics.databaseName,
+      DJANGO_SETTINGS_MODULE: 'nrc.conf.docker',
+      DB_NAME: 'opennotificaties',
       DB_HOST: StringParameter.valueForStringParameter(this, Statics.ssmDbHostname),
       DB_PORT: StringParameter.valueForStringParameter(this, Statics.ssmDbPort),
       IS_HTTPS: 'yes',
       ALLOWED_HOSTS: this.props.zgwCluster.alb.getDomain(),
       CORS_ALLOW_ALL_ORIGINS: 'True',
-      CSRF_TRUSTED_ORIGINS: `https://${this.props.zgwCluster.alb.getDomain()}/open-zaak`,
+      CSRF_TRUSTED_ORIGINS: `https://${this.props.zgwCluster.alb.getDomain()}/open-notificaties`,
       CACHE_DEFAULT: this.props.zgwCluster.redis.redisCluster.attrRedisEndpointAddress + ':' + this.props.zgwCluster.redis.redisCluster.attrRedisEndpointPort,
       CACHE_AXES: this.props.zgwCluster.redis.redisCluster.attrRedisEndpointAddress + ':' + this.props.zgwCluster.redis.redisCluster.attrRedisEndpointPort,
-      SUBPATH: '/open-zaak',
-      // IMPORT_DOCUMENTEN_BASE_DIR=${IMPORT_DOCUMENTEN_BASE_DIR:-/app/import-data}
-      // IMPORT_DOCUMENTEN_BATCH_SIZE=${IMPORT_DOCUMENTEN_BATCH_SIZE:-500}
-      OPENZAAK_SUPERUSER_USERNAME: 'admin',
+      SUBPATH: '/open-notificaties',
+      OPENNOTIFICATIES_SUPERUSER_USERNAME: 'admin',
+      OPENNOTIFICATIES_SUPERUSER_EMAIL: 'admin@localhost',
       DJANGO_SUPERUSER_PASSWORD: 'admin',
-      OPENZAAK_SUPERUSER_EMAIL: 'admin@localhost',
-      CELERY_BROKER_URL: 'redis://'+ this.props.zgwCluster.redis.redisCluster.attrRedisEndpointAddress + ':' + this.props.zgwCluster.redis.redisCluster.attrRedisEndpointPort + '/1',
-      CELERY_RESULT_BACKEND: 'redis://'+ this.props.zgwCluster.redis.redisCluster.attrRedisEndpointAddress + ':' + this.props.zgwCluster.redis.redisCluster.attrRedisEndpointPort + '/1',
+      CELERY_RESULT_BACKEND: 'redis://'+ this.props.zgwCluster.redis.redisCluster.attrRedisEndpointAddress + ':' + this.props.zgwCluster.redis.redisCluster.attrRedisEndpointPort + '/2',
       CELERY_LOGLEVEL: 'DEBUG',
       CELERY_WORKER_CONCURRENCY: '4',
 
+      RABBITMQ_HOST: 'rabbitmq.zgw.local',
+      PUBLISH_BROKER_URL: 'amqp://guest:guest@rabbitmq.zgw.local:5672/%2F',
+      CELERY_BROKER_URL: 'amqp://guest:guest@rabbitmq.zgw.local:5672//',
+      OPENNOTIFICATIES_ORGANIZATION: 'ON',
+      OPENNOTIFICATIES_DOMAIN: `https://${this.props.zgwCluster.alb.getDomain()}/open-notificaties`,
+
       // Openzaak specific stuff
-      OPENZAAK_DOMAIN: this.props.zgwCluster.alb.getDomain(),
-      OPENZAAK_ORGANIZATION: 'OZ',
+      // OPENZAAK_DOMAIN: this.props.zgwCluster.alb.getDomain(),
+      // OPENZAAK_ORGANIZATION: 'OZ',
       DEMO_CONFIG_ENABLE: 'yes',
       DEMO_CLIENT_ID: 'demo-client-id',
       DEMO_SECRET: 'demo-secret',
@@ -161,9 +165,11 @@ export class OpenZaakService extends Construct {
 
       // Waarom zit hier notify spul in? (1 juli)
       // Ah, dit gaat over de notificatie api en openzaak api zodat die met elkaar kunnen praten... (3 juli)
+      // Dit toevoegen doet niets in de applicaties (9 juli), configuratie via de UI gedaan
+      // Dit werkt voor het script setup_configuration.sh (12 juli)
       NOTIF_OPENZAAK_CLIENT_ID: 'notificaties-client',
       NOTIF_OPENZAAK_SECRET: 'notificaties-secret',
-      NOTIF_API_ROOT: 'https://lb.zgw.sandbox-marnix.csp-nijmegen.nl/open-notificaties/api/v1/',
+      AUTORISATIES_API_ROOT: 'https://lb.zgw.sandbox-marnix.csp-nijmegen.nl/open-zaak/autorisaties/api/v1',
       OPENZAAK_NOTIF_CLIENT_ID: 'oz-client',
       OPENZAAK_NOTIF_SECRET: 'oz-secret',
     };
@@ -184,7 +190,7 @@ export class OpenZaakService extends Construct {
     });
 
     const init = mainTaks.addContainer('init', {
-      image: ecs.ContainerImage.fromRegistry('openzaak/open-zaak'),
+      image: ecs.ContainerImage.fromRegistry('openzaak/open-notificaties'),
       logging: new ecs.AwsLogDriver({
         streamPrefix: 'logs',
         logGroup: logGroup,
@@ -193,46 +199,27 @@ export class OpenZaakService extends Construct {
       secrets: secrets,
       entryPoint: ['/setup_configuration.sh'],
       portMappings: [{
-        containerPort: 8081,
+        containerPort: 8092,
       }],
       essential: false,
     });
 
     const main = mainTaks.addContainer('main', {
-      image: ecs.ContainerImage.fromRegistry('openzaak/open-zaak'),
+      image: ecs.ContainerImage.fromRegistry('openzaak/open-notificaties'),
       logging: new ecs.AwsLogDriver({
         streamPrefix: 'logs',
         logGroup: logGroup,
       }),
       portMappings: [{
-        containerPort: 8080,
+        containerPort: 8090,
       }],
       environment: environment,
       secrets: secrets,
     });
+
     main.addContainerDependencies({
       container: init,
       condition: ContainerDependencyCondition.SUCCESS,
-    });
-
-    const init2 = mainTaks.addContainer('init2', {
-      image: ecs.ContainerImage.fromRegistry('openzaak/open-zaak'),
-      logging: new ecs.AwsLogDriver({
-        streamPrefix: 'logs',
-        logGroup: logGroup,
-      }),
-      environment: environment,
-      secrets: secrets,
-      entryPoint: ['/bin/sh', '-c'],
-      command: ['/bin/sh -c "sleep 60 && python src/manage.py send_test_notification"'], // wait a minute to make sure the main service is up and running
-      portMappings: [{
-        containerPort: 8082,
-      }],
-      essential: false,
-    });
-    init2.addContainerDependencies({
-      container: main,
-      condition: ContainerDependencyCondition.START,
     });
 
     mainTaks.addToExecutionRolePolicy(new PolicyStatement({
@@ -265,7 +252,7 @@ export class OpenZaakService extends Construct {
    * @param task the ecs task definition
    * @param props
    */
-  private setupFargateService(task: ecs.TaskDefinition, props: ZgwServiceProps) {
+  private setupFargateService(task: ecs.TaskDefinition, props: OpenNotificatiesServiceProps) {
     const service = new ecs.FargateService(this, 'service', {
       cluster: props.zgwCluster.cluster.cluster,
       taskDefinition: task,

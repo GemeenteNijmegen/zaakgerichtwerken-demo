@@ -1,4 +1,6 @@
 
+import { CdkGraph } from '@aws/pdk/cdk-graph';
+import { CdkGraphDiagramPlugin } from '@aws/pdk/cdk-graph-plugin-diagram';
 import { App } from 'aws-cdk-lib';
 import { ContainerClusterStack } from './ContainerClusterStack';
 import { DatabaseStack } from './DatabaseStack';
@@ -26,5 +28,12 @@ const cluster = new ContainerClusterStack(app, 'zgw-demo', {
 cluster.addDependency(db);
 cluster.addDependency(params);
 
+// Add CdkGraph after other construct added to app
+const graph = new CdkGraph(app, {
+  plugins: [new CdkGraphDiagramPlugin()],
+});
 
 app.synth();
+
+
+graph.report().then(() => console.log('done')).catch(err => console.error(err));
