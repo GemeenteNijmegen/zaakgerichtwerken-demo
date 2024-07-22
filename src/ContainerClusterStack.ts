@@ -7,7 +7,9 @@ import { Port } from 'aws-cdk-lib/aws-ec2';
 import { Construct } from 'constructs';
 import { DnsConstruct } from './constructs/DnsConstruct';
 import { OpenNotificatiesService } from './constructs/OpenNotificatiesService';
+import { OpenNotificatiesServiceCelary } from './constructs/OpenNotificatiesServiceCelary';
 import { OpenZaakService } from './constructs/OpenZaakService';
+import { OpenZaakServiceCelary } from './constructs/OpenZaakServiceCelary';
 import { RabbitMQService } from './constructs/RabbitMqService';
 import { VpcConstruct } from './constructs/VpcConstruct';
 import { ZgwCluster } from './constructs/ZgwCluster';
@@ -40,17 +42,17 @@ export class ContainerClusterStack extends Stack {
       vpc: this.vpc.vpc,
     });
 
-
-    this.addHelloWorldService();
-
     this.addOpenZaakService();
     const notificaties = this.addOpenNotificatiesService();
+    const notificatiesCelery = this.addOpenNotificatiesServiceCelery();
     const rabbitmq = this.addRabbitMqService();
     rabbitmq.fargateService.connections.allowFrom(notificaties.fargateService.connections, Port.tcp(5672));
+    rabbitmq.fargateService.connections.allowFrom(notificatiesCelery.fargateService.connections, Port.tcp(5672));
   }
 
 
   addHelloWorldService() {
+    // TODO not deployed now
     new ZgwService(this, 'hello-world', {
       containerImage: ('nginxdemos/hello'),
       containerPort: 80,
@@ -72,6 +74,12 @@ export class ContainerClusterStack extends Stack {
       priority: 12,
       useSpotInstances: true,
     });
+
+    new OpenZaakServiceCelary(this, 'open-zaak-celary', {
+      zgwCluster: this.zgwCluster,
+      desiredtaskcount: 1,
+      useSpotInstances: true,
+    });
   }
 
   addOpenNotificatiesService() {
@@ -82,6 +90,14 @@ export class ContainerClusterStack extends Stack {
       zgwCluster: this.zgwCluster,
       desiredtaskcount: 1,
       priority: 13,
+      useSpotInstances: true,
+    });
+  }
+
+  addOpenNotificatiesServiceCelery() {
+    return new OpenNotificatiesServiceCelary(this, 'open-notificaties-celery', {
+      zgwCluster: this.zgwCluster,
+      desiredtaskcount: 1,
       useSpotInstances: true,
     });
   }
