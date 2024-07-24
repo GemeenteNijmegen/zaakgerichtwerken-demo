@@ -3,6 +3,7 @@ import {
   aws_ecs as ecs,
 } from 'aws-cdk-lib';
 import { Port, SecurityGroup } from 'aws-cdk-lib/aws-ec2';
+import { ApplicationProtocol, ListenerCondition } from 'aws-cdk-lib/aws-elasticloadbalancingv2';
 import { Effect, PolicyStatement } from 'aws-cdk-lib/aws-iam';
 import { Secret } from 'aws-cdk-lib/aws-secretsmanager';
 import { StringParameter } from 'aws-cdk-lib/aws-ssm';
@@ -23,11 +24,31 @@ export interface OpenNotificatiesServiceProps {
   desiredtaskcount?: number;
 
   /**
+   * The container image to use (e.g. on dockerhub)
+   */
+  containerImage: string;
+
+  /**
+   * Container listing port
+   */
+  containerPort: number;
+
+  /**
+   * Path that is used behind the loadbalancer
+   */
+  path: string;
+
+  /**
    * Indicator if sport instances should be used for
    * running the tasks on fargate
    * @default false
    */
   useSpotInstances?: boolean;
+
+  /**
+   * Provide a unique priority for the rule in the alb....
+   */
+  priority: number;
 
 }
 
@@ -39,7 +60,7 @@ export interface OpenNotificatiesServiceProps {
  * - creates a log group for the service
  * - exposes a single container port to the loadbalancer over http
  */
-export class OpenNotificatiesServiceCelary extends Construct {
+export class OpenNotificatiesServiceCeleryFlower extends Construct {
 
   readonly logGroupArn: string;
   readonly fargateService: ecs.FargateService;
@@ -58,8 +79,36 @@ export class OpenNotificatiesServiceCelary extends Construct {
     const task = this.setupTaskDefinition(logGroup);
     const service = this.setupFargateService(task, props);
     this.fargateService = service;
+    this.setupLoadbalancerTarget(service, props);
 
   }
+
+  /**
+   * Exposes the service to the loadbalancer listner on a given path and port
+   * @param service
+   * @param props
+   */
+  setupLoadbalancerTarget(service: ecs.FargateService, props: OpenNotificatiesServiceProps) {
+    const pathWithSlash = `/${props.path}`;
+    props.zgwCluster.alb.listener.addTargets(this.node.id, {
+      port: props.containerPort,
+      protocol: ApplicationProtocol.HTTP,
+      targets: [service],
+      conditions: [
+        ListenerCondition.pathPatterns([pathWithSlash + '/*']),
+      ],
+      priority: props.priority,
+      healthCheck: {
+        enabled: true,
+        path: '/open-notificaties-flower/',
+        healthyHttpCodes: '200,400,404', // See this acticle for allowing the 400 response... https://medium.com/django-unleashed/djangos-allowed-hosts-in-aws-ecs-369959f2c2ab
+        healthyThresholdCount: 2,
+        unhealthyThresholdCount: 6,
+        port: props.containerPort.toString(),
+      },
+    });
+  }
+
 
   /**
    * Setup a basic log group for this service's logs
@@ -90,7 +139,7 @@ export class OpenNotificatiesServiceCelary extends Construct {
       CSRF_TRUSTED_ORIGINS: `https://${this.props.zgwCluster.alb.getDomain()}/open-notificaties`,
       CACHE_DEFAULT: this.props.zgwCluster.redis.redisCluster.attrRedisEndpointAddress + ':' + this.props.zgwCluster.redis.redisCluster.attrRedisEndpointPort,
       CACHE_AXES: this.props.zgwCluster.redis.redisCluster.attrRedisEndpointAddress + ':' + this.props.zgwCluster.redis.redisCluster.attrRedisEndpointPort,
-      SUBPATH: '/open-notificaties',
+      SUBPATH: '/open-notificaties-flower',
       OPENNOTIFICATIES_SUPERUSER_USERNAME: 'admin',
       OPENNOTIFICATIES_SUPERUSER_EMAIL: 'admin@localhost',
       DJANGO_SUPERUSER_PASSWORD: 'admin',
@@ -110,11 +159,12 @@ export class OpenNotificatiesServiceCelary extends Construct {
       DEMO_CONFIG_ENABLE: 'yes',
       DEMO_CLIENT_ID: 'demo-client-id',
       DEMO_SECRET: 'demo-secret',
+
+      UWSGI_PORT: this.props.containerPort.toString(),
       LOG_LEVEL: 'DEBUG',
       LOG_REQUESTS: 'True',
       LOG_QUERIES: 'True',
       DEBUG: 'True',
-
       // Waarom zit hier notify spul in? (1 juli)
       // Ah, dit gaat over de notificatie api en openzaak api zodat die met elkaar kunnen praten... (3 juli)
       // Dit toevoegen doet niets in de applicaties (9 juli), configuratie via de UI gedaan
@@ -124,6 +174,8 @@ export class OpenNotificatiesServiceCelary extends Construct {
       AUTORISATIES_API_ROOT: 'https://lb.zgw.sandbox-marnix.csp-nijmegen.nl/open-zaak/autorisaties/api/v1',
       OPENZAAK_NOTIF_CLIENT_ID: 'oz-client',
       OPENZAAK_NOTIF_SECRET: 'oz-secret',
+
+      FLOWER_URL_PREFIX: `https://${this.props.zgwCluster.alb.getDomain()}/open-notificaties-flower`,
     };
 
     const secretKey = this.secretKey();
@@ -148,10 +200,10 @@ export class OpenNotificatiesServiceCelary extends Construct {
         logGroup: logGroup,
       }),
       portMappings: [{
-        containerPort: 8095,
+        containerPort: 5555,
       }],
+      command: ['/celery_flower.sh'],
       environment: environment,
-      command: ['/celery_worker.sh'],
       secrets: secrets,
     });
 

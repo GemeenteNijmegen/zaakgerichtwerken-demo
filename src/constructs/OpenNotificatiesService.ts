@@ -152,7 +152,7 @@ export class OpenNotificatiesService extends Construct {
       PUBLISH_BROKER_URL: 'amqp://guest:guest@rabbitmq.zgw.local:5672/%2F',
       CELERY_BROKER_URL: 'amqp://guest:guest@rabbitmq.zgw.local:5672//',
       OPENNOTIFICATIES_ORGANIZATION: 'ON',
-      OPENNOTIFICATIES_DOMAIN: `https://${this.props.zgwCluster.alb.getDomain()}/open-notificaties`,
+      OPENNOTIFICATIES_DOMAIN: this.props.zgwCluster.alb.getDomain(),
 
       // Openzaak specific stuff
       // OPENZAAK_DOMAIN: this.props.zgwCluster.alb.getDomain(),
@@ -162,7 +162,10 @@ export class OpenNotificatiesService extends Construct {
       DEMO_SECRET: 'demo-secret',
 
       UWSGI_PORT: this.props.containerPort.toString(),
-
+      LOG_LEVEL: 'DEBUG',
+      LOG_REQUESTS: 'True',
+      LOG_QUERIES: 'True',
+      DEBUG: 'True',
       // Waarom zit hier notify spul in? (1 juli)
       // Ah, dit gaat over de notificatie api en openzaak api zodat die met elkaar kunnen praten... (3 juli)
       // Dit toevoegen doet niets in de applicaties (9 juli), configuratie via de UI gedaan

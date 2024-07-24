@@ -109,6 +109,10 @@ export class OpenZaakServiceCelary extends Construct {
       DEMO_CONFIG_ENABLE: 'yes',
       DEMO_CLIENT_ID: 'demo-client-id',
       DEMO_SECRET: 'demo-secret',
+      LOG_LEVEL: 'DEBUG',
+      LOG_REQUESTS: 'True',
+      LOG_QUERIES: 'True',
+      DEBUG: 'True',
 
 
       // Waarom zit hier notify spul in? (1 juli)

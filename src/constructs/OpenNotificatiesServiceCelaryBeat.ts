@@ -39,7 +39,7 @@ export interface OpenNotificatiesServiceProps {
  * - creates a log group for the service
  * - exposes a single container port to the loadbalancer over http
  */
-export class OpenNotificatiesServiceCelary extends Construct {
+export class OpenNotificatiesServiceCelaryBeat extends Construct {
 
   readonly logGroupArn: string;
   readonly fargateService: ecs.FargateService;
@@ -110,6 +110,7 @@ export class OpenNotificatiesServiceCelary extends Construct {
       DEMO_CONFIG_ENABLE: 'yes',
       DEMO_CLIENT_ID: 'demo-client-id',
       DEMO_SECRET: 'demo-secret',
+
       LOG_LEVEL: 'DEBUG',
       LOG_REQUESTS: 'True',
       LOG_QUERIES: 'True',
@@ -151,7 +152,7 @@ export class OpenNotificatiesServiceCelary extends Construct {
         containerPort: 8095,
       }],
       environment: environment,
-      command: ['/celery_worker.sh'],
+      command: ['/celery_beat.sh'],
       secrets: secrets,
     });
 

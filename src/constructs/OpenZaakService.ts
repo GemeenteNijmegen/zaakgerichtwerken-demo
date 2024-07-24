@@ -101,7 +101,7 @@ export class OpenZaakService extends Construct {
       healthCheck: {
         enabled: true,
         path: '/open-zaak/admin',
-        healthyHttpCodes: '200,400', // See this acticle for allowing the 400 response... https://medium.com/django-unleashed/djangos-allowed-hosts-in-aws-ecs-369959f2c2ab
+        healthyHttpCodes: '200,400,301', // See this acticle for allowing the 400 response... https://medium.com/django-unleashed/djangos-allowed-hosts-in-aws-ecs-369959f2c2ab
         healthyThresholdCount: 2,
         unhealthyThresholdCount: 6,
         port: props.containerPort.toString(),
@@ -134,7 +134,7 @@ export class OpenZaakService extends Construct {
       DB_HOST: StringParameter.valueForStringParameter(this, Statics.ssmDbHostname),
       DB_PORT: StringParameter.valueForStringParameter(this, Statics.ssmDbPort),
       IS_HTTPS: 'yes',
-      ALLOWED_HOSTS: this.props.zgwCluster.alb.getDomain(),
+      ALLOWED_HOSTS: '*', // See loadbalancer target remark above this.props.zgwCluster.alb.getDomain(),
       CORS_ALLOW_ALL_ORIGINS: 'True',
       CSRF_TRUSTED_ORIGINS: `https://${this.props.zgwCluster.alb.getDomain()}/open-zaak`,
       CACHE_DEFAULT: this.props.zgwCluster.redis.redisCluster.attrRedisEndpointAddress + ':' + this.props.zgwCluster.redis.redisCluster.attrRedisEndpointPort,
@@ -158,7 +158,10 @@ export class OpenZaakService extends Construct {
       DEMO_SECRET: 'demo-secret',
 
       UWSGI_PORT: this.props.containerPort.toString(),
-
+      LOG_LEVEL: 'DEBUG',
+      LOG_REQUESTS: 'True',
+      LOG_QUERIES: 'True',
+      DEBUG: 'True',
       // Waarom zit hier notify spul in? (1 juli)
       // Ah, dit gaat over de notificatie api en openzaak api zodat die met elkaar kunnen praten... (3 juli)
       NOTIF_OPENZAAK_CLIENT_ID: 'notificaties-client',
@@ -215,25 +218,25 @@ export class OpenZaakService extends Construct {
       condition: ContainerDependencyCondition.SUCCESS,
     });
 
-    const init2 = mainTaks.addContainer('init2', {
-      image: ecs.ContainerImage.fromRegistry('openzaak/open-zaak'),
-      logging: new ecs.AwsLogDriver({
-        streamPrefix: 'logs',
-        logGroup: logGroup,
-      }),
-      environment: environment,
-      secrets: secrets,
-      entryPoint: ['/bin/sh', '-c'],
-      command: ['/bin/sh -c "sleep 60 && python src/manage.py send_test_notification"'], // wait a minute to make sure the main service is up and running
-      portMappings: [{
-        containerPort: 8082,
-      }],
-      essential: false,
-    });
-    init2.addContainerDependencies({
-      container: main,
-      condition: ContainerDependencyCondition.START,
-    });
+    // const init2 = mainTaks.addContainer('init2', {
+    //   image: ecs.ContainerImage.fromRegistry('openzaak/open-zaak'),
+    //   logging: new ecs.AwsLogDriver({
+    //     streamPrefix: 'logs',
+    //     logGroup: logGroup,
+    //   }),
+    //   environment: environment,
+    //   secrets: secrets,
+    //   entryPoint: ['/bin/sh', '-c'],
+    //   command: ['/bin/sh -c "sleep 60 && python src/manage.py send_test_notification"'], // wait a minute to make sure the main service is up and running
+    //   portMappings: [{
+    //     containerPort: 8082,
+    //   }],
+    //   essential: false,
+    // });
+    // init2.addContainerDependencies({
+    //   container: main,
+    //   condition: ContainerDependencyCondition.START,
+    // });
 
     mainTaks.addToExecutionRolePolicy(new PolicyStatement({
       effect: Effect.ALLOW,
