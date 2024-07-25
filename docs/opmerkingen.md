@@ -19,3 +19,6 @@
 - Een roltype is wel altijd gekoppeld aan een zaaktype, hiervoor moet je dus eerst een zaaktype aanmaken (nog niet publiceren), omdat een roltype altijd bij een zaak hoort wordt dit roltype ook meteen aan de zaak gekoppeld.
 - Een resultaattype bevat referenties naar de selectielijst (urls). Dit is een publieke API met goede documentatie. https://selectielijst.openzaak.nl/api/v1/schema/#operation/resultaat_list
 - Een zaaktype moet een selectielijstprocesstype hebben dat overeenkomt met het processtype van de het selectielijst-resultaat in het resultaattype.
+
+25 juli
+- Ik kom er achter dat container porten gewoon 8080 kunnen zijn zolang het verschillende services zijn in fagate. Port nummers dus aanpassen naar 8080.

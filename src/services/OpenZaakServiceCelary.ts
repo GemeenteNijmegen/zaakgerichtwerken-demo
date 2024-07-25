@@ -7,10 +7,10 @@ import { Effect, PolicyStatement } from 'aws-cdk-lib/aws-iam';
 import { Secret } from 'aws-cdk-lib/aws-secretsmanager';
 import { StringParameter } from 'aws-cdk-lib/aws-ssm';
 import { Construct } from 'constructs';
-import { ZgwCluster } from './ZgwCluster';
+import { ZgwCluster } from '../constructs/ZgwCluster';
 import { Statics } from '../Statics';
 
-export interface OpenNotificatiesServiceProps {
+export interface ZgwServiceProps {
 
   /**
    * The cluster on which the service is deployed
@@ -29,6 +29,7 @@ export interface OpenNotificatiesServiceProps {
    */
   useSpotInstances?: boolean;
 
+
 }
 
 
@@ -39,14 +40,14 @@ export interface OpenNotificatiesServiceProps {
  * - creates a log group for the service
  * - exposes a single container port to the loadbalancer over http
  */
-export class OpenNotificatiesServiceCelary extends Construct {
+export class OpenZaakServiceCelary extends Construct {
 
   readonly logGroupArn: string;
   readonly fargateService: ecs.FargateService;
 
-  private readonly props: OpenNotificatiesServiceProps;
+  private readonly props: ZgwServiceProps;
 
-  constructor(scope: Construct, id: string, props: OpenNotificatiesServiceProps) {
+  constructor(scope: Construct, id: string, props: ZgwServiceProps) {
     super(scope, id);
     this.props = props;
 
@@ -60,6 +61,7 @@ export class OpenNotificatiesServiceCelary extends Construct {
     this.fargateService = service;
 
   }
+
 
   /**
    * Setup a basic log group for this service's logs
@@ -80,33 +82,30 @@ export class OpenNotificatiesServiceCelary extends Construct {
   private setupTaskDefinition(logGroup: logs.ILogGroup) {
 
     const environment = {
-      DJANGO_SETTINGS_MODULE: 'nrc.conf.docker',
-      DB_NAME: 'opennotificaties',
+      DJANGO_SETTINGS_MODULE: 'openzaak.conf.docker',
+      DB_NAME: Statics.databaseName,
       DB_HOST: StringParameter.valueForStringParameter(this, Statics.ssmDbHostname),
       DB_PORT: StringParameter.valueForStringParameter(this, Statics.ssmDbPort),
       IS_HTTPS: 'yes',
       ALLOWED_HOSTS: this.props.zgwCluster.alb.getDomain(),
       CORS_ALLOW_ALL_ORIGINS: 'True',
-      CSRF_TRUSTED_ORIGINS: `https://${this.props.zgwCluster.alb.getDomain()}/open-notificaties`,
+      CSRF_TRUSTED_ORIGINS: `https://${this.props.zgwCluster.alb.getDomain()}/open-zaak`,
       CACHE_DEFAULT: this.props.zgwCluster.redis.redisCluster.attrRedisEndpointAddress + ':' + this.props.zgwCluster.redis.redisCluster.attrRedisEndpointPort,
       CACHE_AXES: this.props.zgwCluster.redis.redisCluster.attrRedisEndpointAddress + ':' + this.props.zgwCluster.redis.redisCluster.attrRedisEndpointPort,
-      SUBPATH: '/open-notificaties',
-      OPENNOTIFICATIES_SUPERUSER_USERNAME: 'admin',
-      OPENNOTIFICATIES_SUPERUSER_EMAIL: 'admin@localhost',
+      SUBPATH: '/open-zaak',
+      // IMPORT_DOCUMENTEN_BASE_DIR=${IMPORT_DOCUMENTEN_BASE_DIR:-/app/import-data}
+      // IMPORT_DOCUMENTEN_BATCH_SIZE=${IMPORT_DOCUMENTEN_BATCH_SIZE:-500}
+      OPENZAAK_SUPERUSER_USERNAME: 'admin',
       DJANGO_SUPERUSER_PASSWORD: 'admin',
-      CELERY_RESULT_BACKEND: 'redis://'+ this.props.zgwCluster.redis.redisCluster.attrRedisEndpointAddress + ':' + this.props.zgwCluster.redis.redisCluster.attrRedisEndpointPort + '/2',
+      OPENZAAK_SUPERUSER_EMAIL: 'admin@localhost',
+      CELERY_BROKER_URL: 'redis://'+ this.props.zgwCluster.redis.redisCluster.attrRedisEndpointAddress + ':' + this.props.zgwCluster.redis.redisCluster.attrRedisEndpointPort + '/1',
+      CELERY_RESULT_BACKEND: 'redis://'+ this.props.zgwCluster.redis.redisCluster.attrRedisEndpointAddress + ':' + this.props.zgwCluster.redis.redisCluster.attrRedisEndpointPort + '/1',
       CELERY_LOGLEVEL: 'DEBUG',
       CELERY_WORKER_CONCURRENCY: '4',
 
-      RABBITMQ_HOST: 'rabbitmq.zgw.local',
-      PUBLISH_BROKER_URL: 'amqp://guest:guest@rabbitmq.zgw.local:5672/%2F',
-      CELERY_BROKER_URL: 'amqp://guest:guest@rabbitmq.zgw.local:5672//',
-      OPENNOTIFICATIES_ORGANIZATION: 'ON',
-      OPENNOTIFICATIES_DOMAIN: `https://${this.props.zgwCluster.alb.getDomain()}/open-notificaties`,
-
       // Openzaak specific stuff
-      // OPENZAAK_DOMAIN: this.props.zgwCluster.alb.getDomain(),
-      // OPENZAAK_ORGANIZATION: 'OZ',
+      OPENZAAK_DOMAIN: this.props.zgwCluster.alb.getDomain(),
+      OPENZAAK_ORGANIZATION: 'OZ',
       DEMO_CONFIG_ENABLE: 'yes',
       DEMO_CLIENT_ID: 'demo-client-id',
       DEMO_SECRET: 'demo-secret',
@@ -115,13 +114,12 @@ export class OpenNotificatiesServiceCelary extends Construct {
       LOG_QUERIES: 'True',
       DEBUG: 'True',
 
+
       // Waarom zit hier notify spul in? (1 juli)
       // Ah, dit gaat over de notificatie api en openzaak api zodat die met elkaar kunnen praten... (3 juli)
-      // Dit toevoegen doet niets in de applicaties (9 juli), configuratie via de UI gedaan
-      // Dit werkt voor het script setup_configuration.sh (12 juli)
       NOTIF_OPENZAAK_CLIENT_ID: 'notificaties-client',
       NOTIF_OPENZAAK_SECRET: 'notificaties-secret',
-      AUTORISATIES_API_ROOT: 'https://lb.zgw.sandbox-marnix.csp-nijmegen.nl/open-zaak/autorisaties/api/v1',
+      NOTIF_API_ROOT: 'https://lb.zgw.sandbox-marnix.csp-nijmegen.nl/open-notificaties/api/v1/',
       OPENZAAK_NOTIF_CLIENT_ID: 'oz-client',
       OPENZAAK_NOTIF_SECRET: 'oz-secret',
     };
@@ -142,16 +140,16 @@ export class OpenNotificatiesServiceCelary extends Construct {
     });
 
     mainTaks.addContainer('main', {
-      image: ecs.ContainerImage.fromRegistry('openzaak/open-notificaties'),
+      image: ecs.ContainerImage.fromRegistry('openzaak/open-zaak'),
       logging: new ecs.AwsLogDriver({
         streamPrefix: 'logs',
         logGroup: logGroup,
       }),
       portMappings: [{
-        containerPort: 8095,
+        containerPort: 8085,
       }],
-      environment: environment,
       command: ['/celery_worker.sh'],
+      environment: environment,
       secrets: secrets,
     });
 
@@ -185,7 +183,7 @@ export class OpenNotificatiesServiceCelary extends Construct {
    * @param task the ecs task definition
    * @param props
    */
-  private setupFargateService(task: ecs.TaskDefinition, props: OpenNotificatiesServiceProps) {
+  private setupFargateService(task: ecs.TaskDefinition, props: ZgwServiceProps) {
     const service = new ecs.FargateService(this, 'service', {
       cluster: props.zgwCluster.cluster.cluster,
       taskDefinition: task,

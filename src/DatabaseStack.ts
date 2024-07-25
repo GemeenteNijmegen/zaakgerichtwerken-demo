@@ -1,8 +1,9 @@
 import { PermissionsBoundaryAspect } from '@gemeentenijmegen/aws-constructs';
-import { Aspects, Stack, StackProps } from 'aws-cdk-lib';
+import { Aspects, CustomResource, Stack, StackProps } from 'aws-cdk-lib';
 import { IVpc, SubnetType } from 'aws-cdk-lib/aws-ec2';
 import { Secret } from 'aws-cdk-lib/aws-secretsmanager';
 import { StringParameter } from 'aws-cdk-lib/aws-ssm';
+import { Provider } from 'aws-cdk-lib/custom-resources';
 import { Construct } from 'constructs';
 import { DatabaseConstruct } from './constructs/DatabaseConstruct';
 import { VpcConstruct } from './constructs/VpcConstruct';
@@ -20,12 +21,22 @@ export class DatabaseStack extends Stack {
     const vpc = new VpcConstruct(this, 'vpc');
 
     const dbCreds = this.importDatabaseSecret();
-    new DatabaseConstruct(this, 'db', {
+    const db = new DatabaseConstruct(this, 'db', {
       vpc: vpc.vpc,
       databaseSecret: dbCreds,
     });
 
-    this.setupPostgresLambda(vpc.vpc);
+    const sqlLambda = this.setupPostgresLambda(vpc.vpc);
+
+    // Trigger the sql lambda
+    const provider = new Provider(this, 'custom-resource-provider', {
+      onEventHandler: sqlLambda,
+    });
+    const resource = new CustomResource(this, 'custom-resource', {
+      serviceToken: provider.serviceToken,
+    });
+    resource.node.addDependency(db.postgresDatabase);
+
 
   }
 
@@ -39,7 +50,7 @@ export class DatabaseStack extends Stack {
     const dbCredsArn = StringParameter.valueForStringParameter(this, Statics.ssmDbCredentialsArn);
     const dbCreds = Secret.fromSecretCompleteArn(this, 'db-creds', dbCredsArn);
 
-    new PostgresFunction(this, 'create-database', {
+    return new PostgresFunction(this, 'create-database', {
       vpc: vpc,
       vpcSubnets: {
         subnetType: SubnetType.PRIVATE_WITH_EGRESS,
@@ -51,6 +62,7 @@ export class DatabaseStack extends Stack {
         DB_PORT: StringParameter.valueForStringParameter(this, Statics.ssmDbPort),
       },
     });
+
   }
 
 }

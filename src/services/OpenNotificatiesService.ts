@@ -3,11 +3,13 @@ import {
   aws_ecs as ecs,
 } from 'aws-cdk-lib';
 import { Port, SecurityGroup } from 'aws-cdk-lib/aws-ec2';
+import { ContainerDependencyCondition } from 'aws-cdk-lib/aws-ecs';
+import { ApplicationProtocol, ListenerCondition } from 'aws-cdk-lib/aws-elasticloadbalancingv2';
 import { Effect, PolicyStatement } from 'aws-cdk-lib/aws-iam';
 import { Secret } from 'aws-cdk-lib/aws-secretsmanager';
 import { StringParameter } from 'aws-cdk-lib/aws-ssm';
 import { Construct } from 'constructs';
-import { ZgwCluster } from './ZgwCluster';
+import { ZgwCluster } from '../constructs/ZgwCluster';
 import { Statics } from '../Statics';
 
 export interface OpenNotificatiesServiceProps {
@@ -23,11 +25,31 @@ export interface OpenNotificatiesServiceProps {
   desiredtaskcount?: number;
 
   /**
+   * The container image to use (e.g. on dockerhub)
+   */
+  containerImage: string;
+
+  /**
+   * Container listing port
+   */
+  containerPort: number;
+
+  /**
+   * Path that is used behind the loadbalancer
+   */
+  path: string;
+
+  /**
    * Indicator if sport instances should be used for
    * running the tasks on fargate
    * @default false
    */
   useSpotInstances?: boolean;
+
+  /**
+   * Provide a unique priority for the rule in the alb....
+   */
+  priority: number;
 
 }
 
@@ -39,7 +61,7 @@ export interface OpenNotificatiesServiceProps {
  * - creates a log group for the service
  * - exposes a single container port to the loadbalancer over http
  */
-export class OpenNotificatiesServiceCelaryBeat extends Construct {
+export class OpenNotificatiesService extends Construct {
 
   readonly logGroupArn: string;
   readonly fargateService: ecs.FargateService;
@@ -58,8 +80,36 @@ export class OpenNotificatiesServiceCelaryBeat extends Construct {
     const task = this.setupTaskDefinition(logGroup);
     const service = this.setupFargateService(task, props);
     this.fargateService = service;
+    this.setupLoadbalancerTarget(service, props);
 
   }
+
+  /**
+   * Exposes the service to the loadbalancer listner on a given path and port
+   * @param service
+   * @param props
+   */
+  private setupLoadbalancerTarget(service: ecs.FargateService, props: OpenNotificatiesServiceProps) {
+    const pathWithSlash = `/${props.path}`;
+    props.zgwCluster.alb.listener.addTargets(this.node.id, {
+      port: props.containerPort,
+      protocol: ApplicationProtocol.HTTP,
+      targets: [service],
+      conditions: [
+        ListenerCondition.pathPatterns([pathWithSlash + '/*']),
+      ],
+      priority: props.priority,
+      healthCheck: {
+        enabled: true,
+        path: '/open-notificaties/admin',
+        healthyHttpCodes: '200,400', // See this acticle for allowing the 400 response... https://medium.com/django-unleashed/djangos-allowed-hosts-in-aws-ecs-369959f2c2ab
+        healthyThresholdCount: 2,
+        unhealthyThresholdCount: 6,
+        port: props.containerPort.toString(),
+      },
+    });
+  }
+
 
   /**
    * Setup a basic log group for this service's logs
@@ -102,7 +152,7 @@ export class OpenNotificatiesServiceCelaryBeat extends Construct {
       PUBLISH_BROKER_URL: 'amqp://guest:guest@rabbitmq.zgw.local:5672/%2F',
       CELERY_BROKER_URL: 'amqp://guest:guest@rabbitmq.zgw.local:5672//',
       OPENNOTIFICATIES_ORGANIZATION: 'ON',
-      OPENNOTIFICATIES_DOMAIN: `https://${this.props.zgwCluster.alb.getDomain()}/open-notificaties`,
+      OPENNOTIFICATIES_DOMAIN: this.props.zgwCluster.alb.getDomain(),
 
       // Openzaak specific stuff
       // OPENZAAK_DOMAIN: this.props.zgwCluster.alb.getDomain(),
@@ -111,11 +161,11 @@ export class OpenNotificatiesServiceCelaryBeat extends Construct {
       DEMO_CLIENT_ID: 'demo-client-id',
       DEMO_SECRET: 'demo-secret',
 
+      UWSGI_PORT: this.props.containerPort.toString(),
       LOG_LEVEL: 'DEBUG',
       LOG_REQUESTS: 'True',
       LOG_QUERIES: 'True',
       DEBUG: 'True',
-
       // Waarom zit hier notify spul in? (1 juli)
       // Ah, dit gaat over de notificatie api en openzaak api zodat die met elkaar kunnen praten... (3 juli)
       // Dit toevoegen doet niets in de applicaties (9 juli), configuratie via de UI gedaan
@@ -142,18 +192,37 @@ export class OpenNotificatiesServiceCelaryBeat extends Construct {
       memoryMiB: '2048',
     });
 
-    mainTaks.addContainer('main', {
+    const init = mainTaks.addContainer('init', {
+      image: ecs.ContainerImage.fromRegistry('openzaak/open-notificaties'),
+      logging: new ecs.AwsLogDriver({
+        streamPrefix: 'logs',
+        logGroup: logGroup,
+      }),
+      environment: environment,
+      secrets: secrets,
+      entryPoint: ['/setup_configuration.sh'],
+      portMappings: [{
+        containerPort: 8092,
+      }],
+      essential: false,
+    });
+
+    const main = mainTaks.addContainer('main', {
       image: ecs.ContainerImage.fromRegistry('openzaak/open-notificaties'),
       logging: new ecs.AwsLogDriver({
         streamPrefix: 'logs',
         logGroup: logGroup,
       }),
       portMappings: [{
-        containerPort: 8095,
+        containerPort: 8090,
       }],
       environment: environment,
-      command: ['/celery_beat.sh'],
       secrets: secrets,
+    });
+
+    main.addContainerDependencies({
+      container: init,
+      condition: ContainerDependencyCondition.SUCCESS,
     });
 
     mainTaks.addToExecutionRolePolicy(new PolicyStatement({

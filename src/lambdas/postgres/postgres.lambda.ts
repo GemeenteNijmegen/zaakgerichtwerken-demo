@@ -1,5 +1,12 @@
 import * as postgres from 'pg';
 
+const DATABASES = [
+  'opennotificaties',
+  'objects',
+  'objecttypes',
+  'openklant',
+];
+
 export async function handler(_event: any) {
 
   const client = new postgres.Client ({
@@ -13,8 +20,11 @@ export async function handler(_event: any) {
   try {
     console.log('Connecting to database...');
     await client.connect();
-    console.log('Connection sucesful, creating database...');
-    await client.query('CREATE DATABASE opennotificaties');
+    console.log('Connection established');
+    for (const db of DATABASES) {
+      console.log(`creating database ${db}...`);
+      await client.query(`CREATE DATABASE ${db};`);
+    }
     console.log('Done!');
   } catch (error) {
     console.error(error);

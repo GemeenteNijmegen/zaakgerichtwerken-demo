@@ -3,7 +3,7 @@ import {
   aws_ecs as ecs,
 } from 'aws-cdk-lib';
 import { Construct } from 'constructs';
-import { ZgwCluster } from './ZgwCluster';
+import { ZgwCluster } from '../constructs/ZgwCluster';
 
 export interface RabbitMQServiceProps {
 

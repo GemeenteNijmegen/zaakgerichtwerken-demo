@@ -6,16 +6,17 @@ import {
 import { Port } from 'aws-cdk-lib/aws-ec2';
 import { Construct } from 'constructs';
 import { DnsConstruct } from './constructs/DnsConstruct';
-import { OpenNotificatiesService } from './constructs/OpenNotificatiesService';
-import { OpenNotificatiesServiceCelary } from './constructs/OpenNotificatiesServiceCelary';
-import { OpenNotificatiesServiceCelaryBeat } from './constructs/OpenNotificatiesServiceCelaryBeat';
-import { OpenNotificatiesServiceCeleryFlower } from './constructs/OpenNotificatiesServiceCelaryFlower';
-import { OpenZaakService } from './constructs/OpenZaakService';
-import { OpenZaakServiceCelary } from './constructs/OpenZaakServiceCelary';
-import { RabbitMQService } from './constructs/RabbitMqService';
 import { VpcConstruct } from './constructs/VpcConstruct';
 import { ZgwCluster } from './constructs/ZgwCluster';
-import { ZgwService } from './constructs/ZgwService';
+import { ObjectsService } from './services/ObjectsService';
+import { ObjectsServiceCelery } from './services/ObjectsServiceCelery';
+import { ObjecttypesService } from './services/ObjecttypesService';
+import { OpenNotificatiesService } from './services/OpenNotificatiesService';
+import { OpenNotificatiesServiceCelary } from './services/OpenNotificatiesServiceCelary';
+import { OpenNotificatiesServiceCelaryBeat } from './services/OpenNotificatiesServiceCelaryBeat';
+import { OpenZaakService } from './services/OpenZaakService';
+import { OpenZaakServiceCelary } from './services/OpenZaakServiceCelary';
+import { RabbitMQService } from './services/RabbitMqService';
 
 
 export interface ContainerClusterStackProps extends StackProps {}
@@ -44,32 +45,22 @@ export class ContainerClusterStack extends Stack {
       vpc: this.vpc.vpc,
     });
 
+    // Objecten APIs
+    this.addObjecttypesService();
+    this.addObjectsService();
+    this.addObjectsServiceCelery();
+
     this.addOpenZaakService();
     const notificaties = this.addOpenNotificatiesService();
     const notificatiesCelery = this.addOpenNotificatiesServiceCelery();
     const notificatiesCeleryBeat = this.addOpenNotificatiesServiceCeleryBeat();
-    // TODO flower does not work on a path, it'll only return 404s. Thers no good way to debug the background tasks currently
-    // const notificatiesCeleryFlower = this.addOpenNotificatiesServiceCeleryFlower();
+
+    // Setup RabbitMQ and allow services to access the service
     const rabbitmq = this.addRabbitMqService();
     rabbitmq.fargateService.connections.allowFrom(notificaties.fargateService.connections, Port.tcp(5672));
     rabbitmq.fargateService.connections.allowFrom(notificatiesCelery.fargateService.connections, Port.tcp(5672));
     rabbitmq.fargateService.connections.allowFrom(notificatiesCeleryBeat.fargateService.connections, Port.tcp(5672));
-    // rabbitmq.fargateService.connections.allowFrom(notificatiesCeleryFlower.fargateService.connections, Port.tcp(5672));
   }
-
-
-  addHelloWorldService() {
-    // TODO not deployed now
-    new ZgwService(this, 'hello-world', {
-      containerImage: ('nginxdemos/hello'),
-      containerPort: 80,
-      path: 'hello',
-      desiredtaskcount: 1,
-      useSpotInstances: true,
-      zgwCluster: this.zgwCluster,
-    });
-  }
-
 
   addOpenZaakService() {
     new OpenZaakService(this, 'open-zaak', {
@@ -101,18 +92,6 @@ export class ContainerClusterStack extends Stack {
     });
   }
 
-  addOpenNotificatiesServiceCeleryFlower() {
-    return new OpenNotificatiesServiceCeleryFlower(this, 'open-notificaties-celery-flower', {
-      containerImage: '',
-      containerPort: 5555,
-      path: 'open-notificaties-flower',
-      zgwCluster: this.zgwCluster,
-      desiredtaskcount: 1,
-      priority: 14,
-      useSpotInstances: true,
-    });
-  }
-
   addOpenNotificatiesServiceCelery() {
     return new OpenNotificatiesServiceCelary(this, 'open-notificaties-celery', {
       zgwCluster: this.zgwCluster,
@@ -136,5 +115,35 @@ export class ContainerClusterStack extends Stack {
       useSpotInstances: true,
     });
   }
+
+
+  addObjecttypesService() {
+    return new ObjecttypesService(this, 'objecttypes', {
+      path: 'objecttypes',
+      priority: 15,
+      zgwCluster: this.zgwCluster,
+      desiredtaskcount: 1,
+      useSpotInstances: true,
+    });
+  }
+
+  addObjectsService() {
+    return new ObjectsService(this, 'objects', {
+      path: 'objects',
+      priority: 16,
+      zgwCluster: this.zgwCluster,
+      desiredtaskcount: 1,
+      useSpotInstances: true,
+    });
+  }
+
+  addObjectsServiceCelery() {
+    return new ObjectsServiceCelery(this, 'objects-celery', {
+      zgwCluster: this.zgwCluster,
+      desiredtaskcount: 1,
+      useSpotInstances: true,
+    });
+  }
+
 
 }

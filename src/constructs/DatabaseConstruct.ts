@@ -57,6 +57,5 @@ export class DatabaseConstruct extends Construct {
       parameterName: Statics.ssmDbSecurityGroupId,
     });
 
-
   }
 }

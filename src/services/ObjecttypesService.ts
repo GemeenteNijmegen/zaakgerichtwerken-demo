@@ -3,15 +3,16 @@ import {
   aws_ecs as ecs,
 } from 'aws-cdk-lib';
 import { Port, SecurityGroup } from 'aws-cdk-lib/aws-ec2';
+import { ContainerDependencyCondition } from 'aws-cdk-lib/aws-ecs';
 import { ApplicationProtocol, ListenerCondition } from 'aws-cdk-lib/aws-elasticloadbalancingv2';
 import { Effect, PolicyStatement } from 'aws-cdk-lib/aws-iam';
 import { Secret } from 'aws-cdk-lib/aws-secretsmanager';
 import { StringParameter } from 'aws-cdk-lib/aws-ssm';
 import { Construct } from 'constructs';
-import { ZgwCluster } from './ZgwCluster';
+import { ZgwCluster } from '../constructs/ZgwCluster';
 import { Statics } from '../Statics';
 
-export interface OpenNotificatiesServiceProps {
+export interface ZgwServiceProps {
 
   /**
    * The cluster on which the service is deployed
@@ -22,16 +23,6 @@ export interface OpenNotificatiesServiceProps {
    * Desired numer of tasks that should run in this service.
    */
   desiredtaskcount?: number;
-
-  /**
-   * The container image to use (e.g. on dockerhub)
-   */
-  containerImage: string;
-
-  /**
-   * Container listing port
-   */
-  containerPort: number;
 
   /**
    * Path that is used behind the loadbalancer
@@ -60,14 +51,14 @@ export interface OpenNotificatiesServiceProps {
  * - creates a log group for the service
  * - exposes a single container port to the loadbalancer over http
  */
-export class OpenNotificatiesServiceCeleryFlower extends Construct {
+export class ObjecttypesService extends Construct {
 
   readonly logGroupArn: string;
   readonly fargateService: ecs.FargateService;
 
-  private readonly props: OpenNotificatiesServiceProps;
+  private readonly props: ZgwServiceProps;
 
-  constructor(scope: Construct, id: string, props: OpenNotificatiesServiceProps) {
+  constructor(scope: Construct, id: string, props: ZgwServiceProps) {
     super(scope, id);
     this.props = props;
 
@@ -88,10 +79,10 @@ export class OpenNotificatiesServiceCeleryFlower extends Construct {
    * @param service
    * @param props
    */
-  setupLoadbalancerTarget(service: ecs.FargateService, props: OpenNotificatiesServiceProps) {
+  private setupLoadbalancerTarget(service: ecs.FargateService, props: ZgwServiceProps) {
     const pathWithSlash = `/${props.path}`;
     props.zgwCluster.alb.listener.addTargets(this.node.id, {
-      port: props.containerPort,
+      port: 8080,
       protocol: ApplicationProtocol.HTTP,
       targets: [service],
       conditions: [
@@ -100,11 +91,11 @@ export class OpenNotificatiesServiceCeleryFlower extends Construct {
       priority: props.priority,
       healthCheck: {
         enabled: true,
-        path: '/open-notificaties-flower/',
-        healthyHttpCodes: '200,400,404', // See this acticle for allowing the 400 response... https://medium.com/django-unleashed/djangos-allowed-hosts-in-aws-ecs-369959f2c2ab
+        path: '/objecttypes/admin',
+        healthyHttpCodes: '200,400,301,404', // See this acticle for allowing the 400 response... https://medium.com/django-unleashed/djangos-allowed-hosts-in-aws-ecs-369959f2c2ab
         healthyThresholdCount: 2,
         unhealthyThresholdCount: 6,
-        port: props.containerPort.toString(),
+        port: '8080',
       },
     });
   }
@@ -129,53 +120,37 @@ export class OpenNotificatiesServiceCeleryFlower extends Construct {
   private setupTaskDefinition(logGroup: logs.ILogGroup) {
 
     const environment = {
-      DJANGO_SETTINGS_MODULE: 'nrc.conf.docker',
-      DB_NAME: 'opennotificaties',
+      DJANGO_SETTINGS_MODULE: 'objecttypes.conf.docker',
+      DB_NAME: 'objecttypes',
       DB_HOST: StringParameter.valueForStringParameter(this, Statics.ssmDbHostname),
       DB_PORT: StringParameter.valueForStringParameter(this, Statics.ssmDbPort),
-      IS_HTTPS: 'yes',
-      ALLOWED_HOSTS: this.props.zgwCluster.alb.getDomain(),
-      CORS_ALLOW_ALL_ORIGINS: 'True',
-      CSRF_TRUSTED_ORIGINS: `https://${this.props.zgwCluster.alb.getDomain()}/open-notificaties`,
-      CACHE_DEFAULT: this.props.zgwCluster.redis.redisCluster.attrRedisEndpointAddress + ':' + this.props.zgwCluster.redis.redisCluster.attrRedisEndpointPort,
-      CACHE_AXES: this.props.zgwCluster.redis.redisCluster.attrRedisEndpointAddress + ':' + this.props.zgwCluster.redis.redisCluster.attrRedisEndpointPort,
-      SUBPATH: '/open-notificaties-flower',
-      OPENNOTIFICATIES_SUPERUSER_USERNAME: 'admin',
-      OPENNOTIFICATIES_SUPERUSER_EMAIL: 'admin@localhost',
-      DJANGO_SUPERUSER_PASSWORD: 'admin',
-      CELERY_RESULT_BACKEND: 'redis://'+ this.props.zgwCluster.redis.redisCluster.attrRedisEndpointAddress + ':' + this.props.zgwCluster.redis.redisCluster.attrRedisEndpointPort + '/2',
-      CELERY_LOGLEVEL: 'DEBUG',
-      CELERY_WORKER_CONCURRENCY: '4',
+      ALLOWED_HOSTS: '*', // See loadbalancer target remark above this.props.zgwCluster.alb.getDomain(),
+      CACHE_DEFAULT: this.props.zgwCluster.redis.redisCluster.attrRedisEndpointAddress + ':' + this.props.zgwCluster.redis.redisCluster.attrRedisEndpointPort + '/3',
+      CACHE_AXES: this.props.zgwCluster.redis.redisCluster.attrRedisEndpointAddress + ':' + this.props.zgwCluster.redis.redisCluster.attrRedisEndpointPort + '/3',
+      SUBPATH: '/objecttypes',
+      IS_HTTPS: 'True',
+      UWSGI_PORT: '8080',
 
-      RABBITMQ_HOST: 'rabbitmq.zgw.local',
-      PUBLISH_BROKER_URL: 'amqp://guest:guest@rabbitmq.zgw.local:5672/%2F',
-      CELERY_BROKER_URL: 'amqp://guest:guest@rabbitmq.zgw.local:5672//',
-      OPENNOTIFICATIES_ORGANIZATION: 'ON',
-      OPENNOTIFICATIES_DOMAIN: `https://${this.props.zgwCluster.alb.getDomain()}/open-notificaties`,
-
-      // Openzaak specific stuff
-      // OPENZAAK_DOMAIN: this.props.zgwCluster.alb.getDomain(),
-      // OPENZAAK_ORGANIZATION: 'OZ',
-      DEMO_CONFIG_ENABLE: 'yes',
-      DEMO_CLIENT_ID: 'demo-client-id',
-      DEMO_SECRET: 'demo-secret',
-
-      UWSGI_PORT: this.props.containerPort.toString(),
       LOG_LEVEL: 'DEBUG',
       LOG_REQUESTS: 'True',
-      LOG_QUERIES: 'True',
+      LOG_QUERIES: 'False',
       DEBUG: 'True',
-      // Waarom zit hier notify spul in? (1 juli)
-      // Ah, dit gaat over de notificatie api en openzaak api zodat die met elkaar kunnen praten... (3 juli)
-      // Dit toevoegen doet niets in de applicaties (9 juli), configuratie via de UI gedaan
-      // Dit werkt voor het script setup_configuration.sh (12 juli)
-      NOTIF_OPENZAAK_CLIENT_ID: 'notificaties-client',
-      NOTIF_OPENZAAK_SECRET: 'notificaties-secret',
-      AUTORISATIES_API_ROOT: 'https://lb.zgw.sandbox-marnix.csp-nijmegen.nl/open-zaak/autorisaties/api/v1',
-      OPENZAAK_NOTIF_CLIENT_ID: 'oz-client',
-      OPENZAAK_NOTIF_SECRET: 'oz-secret',
 
-      FLOWER_URL_PREFIX: `https://${this.props.zgwCluster.alb.getDomain()}/open-notificaties-flower`,
+      // Required demo stuff?
+      DEMO_TOKEN: 'DemoToken',
+      DEMO_PERSON: 'DemoPerson',
+      DEMO_EMAIL: 'objects@objects.local',
+
+      OBJECTTYPES_DOMAIN: this.props.zgwCluster.alb.getDomain(),
+      OBJECTTYPES_ORGANIZATION: 'OZ',
+      OBJECTS_OBJECTTYPES_TOKEN: 'some-random-string',
+      OBJECTS_OBJECTTYPES_PERSON: 'Some Person',
+      OBJECTS_OBJECTTYPES_EMAIL: 'objects@objects.local',
+
+      // Setup admin user on boot
+      OBJECTTYPE_SUPERUSER_USERNAME: 'admin',
+      OBJECTTYPE_SUPERUSER_PASSWORD: 'admin',
+
     };
 
     const secretKey = this.secretKey();
@@ -193,18 +168,33 @@ export class OpenNotificatiesServiceCeleryFlower extends Construct {
       memoryMiB: '2048',
     });
 
-    mainTaks.addContainer('main', {
-      image: ecs.ContainerImage.fromRegistry('openzaak/open-notificaties'),
+    const init = mainTaks.addContainer('init', {
+      image: ecs.ContainerImage.fromRegistry('maykinmedia/objecttypes-api'),
+      logging: new ecs.AwsLogDriver({
+        streamPrefix: 'logs',
+        logGroup: logGroup,
+      }),
+      environment: environment,
+      secrets: secrets,
+      entryPoint: ['/setup_configuration.sh'],
+      essential: false,
+    });
+
+    const main = mainTaks.addContainer('main', {
+      image: ecs.ContainerImage.fromRegistry('maykinmedia/objecttypes-api'),
       logging: new ecs.AwsLogDriver({
         streamPrefix: 'logs',
         logGroup: logGroup,
       }),
       portMappings: [{
-        containerPort: 5555,
+        containerPort: 8080,
       }],
-      command: ['/celery_flower.sh'],
       environment: environment,
       secrets: secrets,
+    });
+    main.addContainerDependencies({
+      container: init,
+      condition: ContainerDependencyCondition.SUCCESS,
     });
 
     mainTaks.addToExecutionRolePolicy(new PolicyStatement({
@@ -237,7 +227,7 @@ export class OpenNotificatiesServiceCeleryFlower extends Construct {
    * @param task the ecs task definition
    * @param props
    */
-  private setupFargateService(task: ecs.TaskDefinition, props: OpenNotificatiesServiceProps) {
+  private setupFargateService(task: ecs.TaskDefinition, props: ZgwServiceProps) {
     const service = new ecs.FargateService(this, 'service', {
       cluster: props.zgwCluster.cluster.cluster,
       taskDefinition: task,
