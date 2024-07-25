@@ -26,7 +26,7 @@ export class DatabaseStack extends Stack {
       databaseSecret: dbCreds,
     });
 
-    const sqlLambda = this.setupPostgresLambda(vpc.vpc);
+    const sqlLambda = this.setupPostgresLambda(vpc.vpc, db);
 
     // Trigger the sql lambda
     const provider = new Provider(this, 'custom-resource-provider', {
@@ -45,7 +45,7 @@ export class DatabaseStack extends Stack {
     return Secret.fromSecretPartialArn(this, 'db-credentials', arn);
   }
 
-  setupPostgresLambda(vpc: IVpc) {
+  setupPostgresLambda(vpc: IVpc, db: DatabaseConstruct) {
 
     const dbCredsArn = StringParameter.valueForStringParameter(this, Statics.ssmDbCredentialsArn);
     const dbCreds = Secret.fromSecretCompleteArn(this, 'db-creds', dbCredsArn);
@@ -58,8 +58,8 @@ export class DatabaseStack extends Stack {
       environment: {
         DB_USERNAME: dbCreds.secretValueFromJson('username').toString(),
         DB_PASSWORD: dbCreds.secretValueFromJson('password').toString(),
-        DB_HOST: StringParameter.valueForStringParameter(this, Statics.ssmDbHostname),
-        DB_PORT: StringParameter.valueForStringParameter(this, Statics.ssmDbPort),
+        DB_HOST: db.postgresDatabase.instanceEndpoint.hostname,
+        DB_PORT: db.postgresDatabase.instanceEndpoint.port.toString(),
       },
     });
 
