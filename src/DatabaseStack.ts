@@ -1,5 +1,5 @@
 import { PermissionsBoundaryAspect } from '@gemeentenijmegen/aws-constructs';
-import { Aspects, CustomResource, Stack, StackProps } from 'aws-cdk-lib';
+import { Aspects, CustomResource, Duration, Stack, StackProps } from 'aws-cdk-lib';
 import { IVpc, SubnetType } from 'aws-cdk-lib/aws-ec2';
 import { Secret } from 'aws-cdk-lib/aws-secretsmanager';
 import { StringParameter } from 'aws-cdk-lib/aws-ssm';
@@ -61,6 +61,7 @@ export class DatabaseStack extends Stack {
         DB_HOST: db.postgresDatabase.instanceEndpoint.hostname,
         DB_PORT: db.postgresDatabase.instanceEndpoint.port.toString(),
       },
+      timeout: Duration.minutes(10), // For long running queries
     });
 
   }
