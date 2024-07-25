@@ -118,7 +118,7 @@ export class ZgwService extends Construct {
     }
     const pathWithSlash = `/${props.expose.path}`;
     props.zgwCluster.alb.listener.addTargets(this.node.id, {
-      port: props.expose?.port,
+      port: props.expose.port,
       protocol: ApplicationProtocol.HTTP,
       targets: [this.service],
       conditions: [
@@ -131,7 +131,7 @@ export class ZgwService extends Construct {
         healthyHttpCodes: '200,400,301,404', // See this acticle for allowing the 400 response... https://medium.com/django-unleashed/djangos-allowed-hosts-in-aws-ecs-369959f2c2ab
         healthyThresholdCount: 2,
         unhealthyThresholdCount: 6,
-        port: props.expose.path.toString(),
+        port: props.expose.port.toString(),
       },
     });
   }
