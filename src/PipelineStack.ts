@@ -72,7 +72,7 @@ export class PipelineStack extends Stack {
    * @returns
    */
   private connectionSource(connectionArn: CfnParameter): pipelines.CodePipelineSource {
-    return pipelines.CodePipelineSource.connection('GemeenteNijmegen/mijn-nijmegen', this.branchName, {
+    return pipelines.CodePipelineSource.connection('GemeenteNijmegen/zaakgerichtwerken-demo', this.branchName, {
       connectionArn: connectionArn.valueAsString,
     });
   }
