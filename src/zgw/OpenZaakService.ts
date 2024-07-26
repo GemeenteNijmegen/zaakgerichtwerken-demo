@@ -30,7 +30,7 @@ export class OpenZaakService extends ComposedZgwService {
           port: OpenZaakService.PORT,
           priority: 22, // Note must be unique across all alb rules
         },
-        initContainerCommand: ['python', 'src/manage.py', 'register_kanalen', '&&', '/setup_configuration.sh'],
+        initContainerCommand: ['python', 'src/manage.py', 'register_kanalen', ';', '&&', '/setup_configuration.sh'],
       }),
     );
 
