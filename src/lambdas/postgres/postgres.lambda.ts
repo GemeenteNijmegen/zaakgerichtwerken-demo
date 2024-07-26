@@ -9,6 +9,11 @@ const DATABASES = [
 
 export async function handler(_event: any) {
 
+  /**
+   * Connect to the default postgres db.
+   * Note for this to work we need to set force_ssl to 0 in de postgres db config.
+   * See https://stackoverflow.com/questions/76899023/rds-while-connection-error-no-pg-hba-conf-entry-for-host
+   */
   const client = new postgres.Client ({
     user: process.env.DB_USERNAME!,
     password: process.env.DB_PASSWORD!,

@@ -4,6 +4,7 @@ import {
   aws_rds as rds, aws_ec2 as ec2, aws_kms as kms,
   RemovalPolicy,
 } from 'aws-cdk-lib';
+import { PostgresEngineVersion } from 'aws-cdk-lib/aws-rds';
 import { ISecret } from 'aws-cdk-lib/aws-secretsmanager';
 import { StringParameter } from 'aws-cdk-lib/aws-ssm';
 import { Construct } from 'constructs';
@@ -28,7 +29,9 @@ export class DatabaseConstruct extends Construct {
 
     // Postgress instance using the templated secret as credentials
     const postgresInstance = new rds.DatabaseInstance(this, 'postgres-instance', {
-      engine: rds.DatabaseInstanceEngine.POSTGRES,
+      engine: rds.DatabaseInstanceEngine.postgres({
+        version: PostgresEngineVersion.VER_16_3,
+      }),
       instanceType: ec2.InstanceType.of(ec2.InstanceClass.T3, ec2.InstanceSize.MICRO),
       credentials: {
         username: props.databaseSecret.secretValueFromJson('username').toString(),
