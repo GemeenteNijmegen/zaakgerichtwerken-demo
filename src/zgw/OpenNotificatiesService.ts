@@ -67,7 +67,7 @@ export class OpenNotificatiesService extends ComposedZgwService {
       DB_HOST: StringParameter.valueForStringParameter(this, Statics.ssmDbHostname),
       DB_PORT: StringParameter.valueForStringParameter(this, Statics.ssmDbPort),
       IS_HTTPS: 'yes',
-      ALLOWED_HOSTS: this.props.zgwCluster.alb.getDomain(),
+      ALLOWED_HOSTS: '*', // this.props.zgwCluster.alb.getDomain(),
       CORS_ALLOW_ALL_ORIGINS: 'True',
       CSRF_TRUSTED_ORIGINS: `https://${this.props.zgwCluster.alb.getDomain()}/open-notificaties`,
       CACHE_DEFAULT: this.props.zgwCluster.redis.redisCluster.attrRedisEndpointAddress + ':' + this.props.zgwCluster.redis.redisCluster.attrRedisEndpointPort,

@@ -52,54 +52,9 @@ export class ContainerClusterStack extends Stack {
     const rabbitmq = this.addRabbitMqService();
     rabbitmq.fargateService.connections.allowFrom(notificaties.getZgwService('open-notificaties').service.connections, Port.tcp(RabbitMQService.PORT));
     rabbitmq.fargateService.connections.allowFrom(notificaties.getZgwService('open-notificaties-celery').service.connections, Port.tcp(RabbitMQService.PORT));
-    // rabbitmq.fargateService.connections.allowFrom(notificatiesCeleryBeat.fargateService.connections, Port.tcp(5672));
+    rabbitmq.fargateService.connections.allowFrom(notificaties.getZgwService('open-notificaties-celery-beat').service.connections, Port.tcp(5672));
   }
 
-  // addOpenZaakService() {
-  //   new OpenZaakService(this, 'open-zaak', {
-  //     containerImage: '',
-  //     containerPort: 8080,
-  //     path: 'open-zaak',
-  //     zgwCluster: this.zgwCluster,
-  //     desiredtaskcount: 1,
-  //     priority: 12,
-  //     useSpotInstances: true,
-  //   });
-
-  //   new OpenZaakServiceCelary(this, 'open-zaak-celary', {
-  //     zgwCluster: this.zgwCluster,
-  //     desiredtaskcount: 1,
-  //     useSpotInstances: true,
-  //   });
-  // }
-
-  // addOpenNotificatiesService() {
-  //   return new OpenNotificatiesService(this, 'open-notificaties', {
-  //     containerImage: '',
-  //     containerPort: 8090,
-  //     path: 'open-notificaties',
-  //     zgwCluster: this.zgwCluster,
-  //     desiredtaskcount: 1,
-  //     priority: 13,
-  //     useSpotInstances: true,
-  //   });
-  // }
-
-  // addOpenNotificatiesServiceCelery() {
-  //   return new OpenNotificatiesServiceCelary(this, 'open-notificaties-celery', {
-  //     zgwCluster: this.zgwCluster,
-  //     desiredtaskcount: 1,
-  //     useSpotInstances: true,
-  //   });
-  // }
-
-  // addOpenNotificatiesServiceCeleryBeat() {
-  //   return new OpenNotificatiesServiceCelaryBeat(this, 'open-notificaties-celery-beat', {
-  //     zgwCluster: this.zgwCluster,
-  //     desiredtaskcount: 1,
-  //     useSpotInstances: true,
-  //   });
-  // }
 
   addRabbitMqService() {
     return new RabbitMQService(this, 'rabbitmq', {
@@ -108,36 +63,6 @@ export class ContainerClusterStack extends Stack {
       useSpotInstances: true,
     });
   }
-
-
-  // addObjecttypesService() {
-  //   return new ObjecttypesService(this, 'objecttypes', {
-  //     path: 'objecttypes',
-  //     priority: 15,
-  //     zgwCluster: this.zgwCluster,
-  //     desiredtaskcount: 1,
-  //     useSpotInstances: true,
-  //   });
-  // }
-
-  // addObjectsService() {
-  //   return new ObjectsService(this, 'objects', {
-  //     path: 'objects',
-  //     priority: 16,
-  //     zgwCluster: this.zgwCluster,
-  //     desiredtaskcount: 1,
-  //     useSpotInstances: true,
-  //   });
-  // }
-
-  // addObjectsServiceCelery() {
-  //   return new ObjectsServiceCelery(this, 'objects-celery', {
-  //     zgwCluster: this.zgwCluster,
-  //     desiredtaskcount: 1,
-  //     useSpotInstances: true,
-  //   });
-  // }
-
 
   addObjectsService() {
     return new ObjectsService(this, 'objects', {
