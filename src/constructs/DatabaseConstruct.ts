@@ -37,6 +37,9 @@ export class DatabaseConstruct extends Construct {
       vpc: props.vpc,
       databaseName: Statics.databaseName,
       storageEncryptionKey: postgresKmsKey,
+      parameters: {
+        'rds.force_ssl': '0',
+      },
     });
     this.postgresDatabase = postgresInstance;
 
