@@ -3,12 +3,15 @@ import { PermissionsBoundaryAspect } from '@gemeentenijmegen/aws-constructs';
 import {
   Stack, StackProps, Aspects,
 } from 'aws-cdk-lib';
+import { Port } from 'aws-cdk-lib/aws-ec2';
 import { Construct } from 'constructs';
 import { DnsConstruct } from './constructs/DnsConstruct';
 import { VpcConstruct } from './constructs/VpcConstruct';
 import { ZgwCluster } from './constructs/ZgwCluster';
+import { RabbitMQService } from './services/RabbitMqService';
 import { ObjectsService } from './zgw/ObjectsService';
 import { ObjecttypesService } from './zgw/ObjecttypesService';
+import { OpenNotificatiesService } from './zgw/OpenNotificatiesService';
 import { OpenZaakService } from './zgw/OpenZaakService';
 
 
@@ -42,19 +45,13 @@ export class ContainerClusterStack extends Stack {
     this.addObjectsService();
     this.addObjecttypesService();
     this.addOpenZaakService();
-    // this.addObjecttypesService();
-    // this.addObjectsService();
-    // this.addObjectsServiceCelery();
 
-    // this.addOpenZaakService();
-    // const notificaties = this.addOpenNotificatiesService();
-    // const notificatiesCelery = this.addOpenNotificatiesServiceCelery();
-    // const notificatiesCeleryBeat = this.addOpenNotificatiesServiceCeleryBeat();
+    const notificaties = this.addOpenNotificatiesService();
 
     // // Setup RabbitMQ and allow services to access the service
-    // const rabbitmq = this.addRabbitMqService();
-    // rabbitmq.fargateService.connections.allowFrom(notificaties.fargateService.connections, Port.tcp(5672));
-    // rabbitmq.fargateService.connections.allowFrom(notificatiesCelery.fargateService.connections, Port.tcp(5672));
+    const rabbitmq = this.addRabbitMqService();
+    rabbitmq.fargateService.connections.allowFrom(notificaties.getZgwService('open-notificaties').service.connections, Port.tcp(RabbitMQService.PORT));
+    rabbitmq.fargateService.connections.allowFrom(notificaties.getZgwService('open-notificaties-celery').service.connections, Port.tcp(RabbitMQService.PORT));
     // rabbitmq.fargateService.connections.allowFrom(notificatiesCeleryBeat.fargateService.connections, Port.tcp(5672));
   }
 
@@ -104,13 +101,13 @@ export class ContainerClusterStack extends Stack {
   //   });
   // }
 
-  // addRabbitMqService() {
-  //   return new RabbitMQService(this, 'rabbitmq', {
-  //     zgwCluster: this.zgwCluster,
-  //     desiredtaskcount: 1,
-  //     useSpotInstances: true,
-  //   });
-  // }
+  addRabbitMqService() {
+    return new RabbitMQService(this, 'rabbitmq', {
+      zgwCluster: this.zgwCluster,
+      desiredtaskcount: 1,
+      useSpotInstances: true,
+    });
+  }
 
 
   // addObjecttypesService() {
@@ -158,6 +155,13 @@ export class ContainerClusterStack extends Stack {
 
   addOpenZaakService() {
     return new OpenZaakService(this, 'open-zaak', {
+      zgwCluster: this.zgwCluster,
+      useSpotInstances: true,
+    });
+  }
+
+  addOpenNotificatiesService() {
+    return new OpenNotificatiesService(this, 'open-notificaties', {
       zgwCluster: this.zgwCluster,
       useSpotInstances: true,
     });

@@ -37,6 +37,11 @@ export interface RabbitMQServiceProps {
  */
 export class RabbitMQService extends Construct {
 
+  /**
+   * Default rabbitmq post
+   */
+  public static readonly PORT = 5672;
+
   readonly logGroupArn: string;
   readonly fargateService: ecs.FargateService;
 
