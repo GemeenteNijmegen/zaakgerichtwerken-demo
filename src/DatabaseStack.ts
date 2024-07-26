@@ -1,6 +1,6 @@
 import { PermissionsBoundaryAspect } from '@gemeentenijmegen/aws-constructs';
 import { Aspects, CustomResource, Duration, Stack, StackProps } from 'aws-cdk-lib';
-import { IVpc, SubnetType } from 'aws-cdk-lib/aws-ec2';
+import { IVpc, Port, SubnetType } from 'aws-cdk-lib/aws-ec2';
 import { Secret } from 'aws-cdk-lib/aws-secretsmanager';
 import { StringParameter } from 'aws-cdk-lib/aws-ssm';
 import { Provider } from 'aws-cdk-lib/custom-resources';
@@ -27,6 +27,8 @@ export class DatabaseStack extends Stack {
     });
 
     const sqlLambda = this.setupPostgresLambda(vpc.vpc, db);
+    db.postgresDatabase.connections.allowFrom(sqlLambda.connections, Port.tcp(db.postgresDatabase.instanceEndpoint.port));
+
 
     // Trigger the sql lambda
     const provider = new Provider(this, 'custom-resource-provider', {
@@ -50,7 +52,7 @@ export class DatabaseStack extends Stack {
     const dbCredsArn = StringParameter.valueForStringParameter(this, Statics.ssmDbCredentialsArn);
     const dbCreds = Secret.fromSecretCompleteArn(this, 'db-creds', dbCredsArn);
 
-    return new PostgresFunction(this, 'create-database', {
+    const fn = new PostgresFunction(this, 'create-database', {
       vpc: vpc,
       vpcSubnets: {
         subnetType: SubnetType.PRIVATE_WITH_EGRESS,
@@ -63,6 +65,9 @@ export class DatabaseStack extends Stack {
       },
       timeout: Duration.minutes(10), // For long running queries
     });
+
+
+    return fn;
 
   }
 
