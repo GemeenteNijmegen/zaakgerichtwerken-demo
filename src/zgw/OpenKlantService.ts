@@ -30,7 +30,7 @@ export class OpenKlantService extends ComposedZgwService {
           port: OpenKlantService.PORT,
           priority: 24, // Note must be unique across all alb rules
         },
-        initContainerCommand: ['/setup_configuration.sh'],
+        // initContainerCommand: ['/setup_configuration.sh'], // TODO not setup required?
       }),
     );
 
