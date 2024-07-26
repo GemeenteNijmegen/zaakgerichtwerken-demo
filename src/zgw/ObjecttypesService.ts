@@ -19,8 +19,8 @@ export class ObjecttypesService extends ComposedZgwService {
 
     this.registerZgwService(
       'objecttypes',
-      new ZgwService(this, 'objects', {
-        containerImage: 'maykinmedia/objects-api',
+      new ZgwService(this, 'objecttypes', {
+        containerImage: 'maykinmedia/objecttypes-api',
         databaseCredentials: this.databaseCredentials,
         environment: this.getEnvironmentConfiguration(),
         secrets: this.getSecretConfiguration(),
