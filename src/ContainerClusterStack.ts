@@ -9,6 +9,7 @@ import { VpcConstruct } from './constructs/VpcConstruct';
 import { ZgwCluster } from './constructs/ZgwCluster';
 import { ObjectsService } from './zgw/ObjectsService';
 import { ObjecttypesService } from './zgw/ObjecttypesService';
+import { OpenZaakService } from './zgw/OpenZaakService';
 
 
 export interface ContainerClusterStackProps extends StackProps {}
@@ -40,6 +41,7 @@ export class ContainerClusterStack extends Stack {
     // Objecten APIs
     this.addObjectsService();
     this.addObjecttypesService();
+    this.addOpenZaakService();
     // this.addObjecttypesService();
     // this.addObjectsService();
     // this.addObjectsServiceCelery();
@@ -149,6 +151,13 @@ export class ContainerClusterStack extends Stack {
 
   addObjecttypesService() {
     return new ObjecttypesService(this, 'objecttypes', {
+      zgwCluster: this.zgwCluster,
+      useSpotInstances: true,
+    });
+  }
+
+  addOpenZaakService() {
+    return new OpenZaakService(this, 'open-zaak', {
       zgwCluster: this.zgwCluster,
       useSpotInstances: true,
     });
