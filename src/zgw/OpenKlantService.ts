@@ -59,7 +59,7 @@ export class OpenKlantService extends ComposedZgwService {
       CACHE_AXES: this.props.zgwCluster.redis.redisCluster.attrRedisEndpointAddress + ':' + this.props.zgwCluster.redis.redisCluster.attrRedisEndpointPort + '/open-klant',
       SUBPATH: '/open-klant',
       IS_HTTPS: 'True',
-      UWSGI_PORT: OpenKlantService.PORT,
+      UWSGI_PORT: OpenKlantService.PORT.toString(),
 
       LOG_LEVEL: 'DEBUG',
       LOG_REQUESTS: 'True',
