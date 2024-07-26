@@ -7,7 +7,8 @@ import { Construct } from 'constructs';
 import { DnsConstruct } from './constructs/DnsConstruct';
 import { VpcConstruct } from './constructs/VpcConstruct';
 import { ZgwCluster } from './constructs/ZgwCluster';
-import { ObjectsService as ComposedObjectsService } from './zgw/ObjectsService';
+import { ObjectsService } from './zgw/ObjectsService';
+import { ObjecttypesService } from './zgw/ObjecttypesService';
 
 
 export interface ContainerClusterStackProps extends StackProps {}
@@ -37,7 +38,8 @@ export class ContainerClusterStack extends Stack {
     });
 
     // Objecten APIs
-    this.addObjectsServiceV2();
+    this.addObjectsService();
+    this.addObjecttypesService();
     // this.addObjecttypesService();
     // this.addObjectsService();
     // this.addObjectsServiceCelery();
@@ -138,12 +140,15 @@ export class ContainerClusterStack extends Stack {
   // }
 
 
-  /**
-   * New way to setup the service
-   * @returns
-   */
-  addObjectsServiceV2() {
-    return new ComposedObjectsService(this, 'objects', {
+  addObjectsService() {
+    return new ObjectsService(this, 'objects', {
+      zgwCluster: this.zgwCluster,
+      useSpotInstances: true,
+    });
+  }
+
+  addObjecttypesService() {
+    return new ObjecttypesService(this, 'objecttypes', {
       zgwCluster: this.zgwCluster,
       useSpotInstances: true,
     });
