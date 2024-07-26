@@ -31,6 +31,7 @@ export class OpenNotificatiesService extends ComposedZgwService {
           priority: 23, // Note must be unique across all alb rules
         },
         initContainerCommand: ['/setup_configuration.sh'],
+        // cpu: 1024, // Having problems with this container currently...
       }),
     );
 

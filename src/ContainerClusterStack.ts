@@ -11,6 +11,7 @@ import { ZgwCluster } from './constructs/ZgwCluster';
 import { RabbitMQService } from './services/RabbitMqService';
 import { ObjectsService } from './zgw/ObjectsService';
 import { ObjecttypesService } from './zgw/ObjecttypesService';
+import { OpenKlantService } from './zgw/OpenKlantService';
 import { OpenNotificatiesService } from './zgw/OpenNotificatiesService';
 import { OpenZaakService } from './zgw/OpenZaakService';
 
@@ -45,6 +46,7 @@ export class ContainerClusterStack extends Stack {
     this.addObjectsService();
     this.addObjecttypesService();
     this.addOpenZaakService();
+    this.addOpenKlant();
 
     const notificaties = this.addOpenNotificatiesService();
 
@@ -87,6 +89,13 @@ export class ContainerClusterStack extends Stack {
 
   addOpenNotificatiesService() {
     return new OpenNotificatiesService(this, 'open-notificaties', {
+      zgwCluster: this.zgwCluster,
+      useSpotInstances: true,
+    });
+  }
+
+  addOpenKlant() {
+    return new OpenKlantService(this, 'open-klant', {
       zgwCluster: this.zgwCluster,
       useSpotInstances: true,
     });
