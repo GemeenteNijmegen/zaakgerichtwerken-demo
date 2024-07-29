@@ -1,0 +1,39 @@
+{
+    "Records": [
+        {
+            "EventSource": "aws:sns",
+            "EventVersion": "1.0",
+            "EventSubscriptionArn": "arn:aws:sns:eu-central-1:338472043295:eform-submissions:345943a1-f48c-4b99-a7b5-9b8dd79b7180",
+            "Sns": {
+                "Type": "Notification",
+                "MessageId": "e9904dbb-f262-5958-b027-12a6029cdd97",
+                "TopicArn": "arn:aws:sns:eu-central-1:338472043295:eform-submissions",
+                "Subject": null,
+                "Message": "{\"formId\":\"776e10d0-01aa-4fbf-9053-b5fbfbdc57a1\",\"formTypeId\":\"test\",\"appId\":\"TDL\",\"reference\":\"TDL28.555\",\"data\":{\"bsnKvk\":\"\",\"isgemachtigde\":\"\",\"geenBelasting\":{\"digiD\":{\"container1\":{}},\"eHerkenning\":{\"contactpersoonContainer\":{\"eMailadres\":\"test@example.com\"}}},\"digitaalNamensMijzelfOfAdvocaat\":{\"toevoegen\":[]},\"ikHebAlleVragenNaarWaarheidBeantwoord\":true,\"vorige2\":false,\"verzenden1\":true,\"nonhiddenfieldsform\":{\"data\":{\"naamIngelogdeGebruiker\":\"Test EMZ Dagobert\",\"straatnaam\":\"\",\"huisnummerfield\":\"\",\"postcode\":\"\",\"woonplaats\":\"\"},\"metadata\":{}}},\"metadata\":{\"selectData\":{\"selectNijmegen\":{\"label\":\"testselect\"}},\"timezone\":\"UTC\",\"offset\":0,\"origin\":\"https://app6-accp.nijmegen.nl\",\"referrer\":\"\",\"browserName\":\"Netscape\",\"userAgent\":\"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36\",\"pathName\":\"/\",\"onLine\":true,\"timestamp\":[2024,7,26,18,45,15,67468006]},\"employeeData\":{},\"pdf\":{\"reference\":\"fa9db4b5b4d1c975e015be3d0a846901\",\"location\":\"776e10d0-01aa-4fbf-9053-b5fbfbdc57a1/pdf/TDL28.555\",\"bucketName\":\"webforms-eformgenericserv-eformattuploads951db329-lm1p2s2mgzv3\"},\"kvkData\":{\"kvkNummer\":\"69599084\",\"indNonMailing\":\"Ja\",\"naam\":\"Test EMZ Dagobert\",\"formeleRegistratiedatum\":\"20170710\",\"materieleRegistratie\":{\"datumAanvang\":\"20170108\"},\"totaalWerkzamePersonen\":1,\"handelsnamen\":[{\"naam\":\"Test EMZ Dagobert\",\"volgorde\":0},{\"naam\":\"Tweede handelsnaam 1MZ\",\"volgorde\":1},{\"naam\":\"Derde handelsnaam 1MZ\",\"volgorde\":2},{\"naam\":\"Vierde handelsnaam 1MZ\",\"volgorde\":3}],\"sbiActiviteiten\":[{\"sbiCode\":\"1011\",\"sbiOmschrijving\":\"Slachterijen (geen pluimvee-)\",\"indHoofdactiviteit\":\"Ja\"},{\"sbiCode\":\"1012\",\"sbiOmschrijving\":\"Pluimveeslachterijen\",\"indHoofdactiviteit\":\"Nee\"},{\"sbiCode\":\"1013\",\"sbiOmschrijving\":\"Vleesverwerking (niet tot maaltijden)\",\"indHoofdactiviteit\":\"Nee\"}],\"links\":[{\"rel\":\"self\",\"href\":\"https://api.kvk.nl/test/api/v1/basisprofielen/69599084\"},{\"rel\":\"vestigingen\",\"href\":\"https://api.kvk.nl/test/api/v1/basisprofielen/69599084/vestigingen\"}],\"_embedded\":{\"hoofdvestiging\":{\"vestigingsnummer\":\"000038509504\",\"kvkNummer\":\"69599084\",\"formeleRegistratiedatum\":\"20200828\",\"materieleRegistratie\":{\"datumAanvang\":\"20150828\"},\"eersteHandelsnaam\":\"Test EMZ Dagobert\",\"indHoofdvestiging\":\"Ja\",\"indCommercieleVestiging\":\"Ja\",\"totaalWerkzamePersonen\":1,\"adressen\":[{\"type\":\"bezoekadres\",\"indAfgeschermd\":\"Nee\",\"volledigAdres\":\"Abebe Bikilalaan 17 M                                 1034WL Amsterdam\",\"straatnaam\":\"Abebe Bikilalaan\",\"huisnummer\":17,\"huisletter\":\"M\",\"postcode\":\"1034WL\",\"plaats\":\"Amsterdam\",\"land\":\"Nederland\"}],\"links\":[{\"rel\":\"self\",\"href\":\"https://api.kvk.nl/test/api/v1/basisprofielen/69599084/hoofdvestiging\"},{\"rel\":\"vestigingen\",\"href\":\"https://api.kvk.nl/test/api/v1/basisprofielen/69599084/vestigingen\"},{\"rel\":\"basisprofiel\",\"href\":\"https://api.kvk.nl/test/api/v1/basisprofielen/69599084\"},{\"rel\":\"vestigingsprofiel\",\"href\":\"https://api.kvk.nl/test/api/v1/vestigingsprofielen/000038509504\"}]},\"eigenaar\":{\"rechtsvorm\":\"Eenmanszaak\",\"uitgebreideRechtsvorm\":\"Eenmanszaak\",\"links\":[{\"rel\":\"self\",\"href\":\"https://api.kvk.nl/test/api/v1/basisprofielen/69599084/eigenaar\"},{\"rel\":\"basisprofiel\",\"href\":\"https://api.kvk.nl/test/api/v1/basisprofielen/69599084\"}]}}},\"kvknummer\":\"69599084\"}",
+                "Timestamp": "2024-07-26T18:45:18.206Z",
+                "SignatureVersion": "1",
+                "Signature": "fe1fc6TjhXj+0I/gb8voknWL9/CsqRJrNEVSeBpT+ReoPpb5mjnVLrxGxJw6r9Jp1cEKlwDuonH4Ff156/l1IFsdCyKBWA4zRtx65O+yGDY7z4Rdm36+vUtDz7H2AUpQUFVtgu5jVvDx0t+WTg0ciWkOSktCL7eybCHTMONdRh4rRJcmc/Na7EIsPGibxhFtxmoJYk3AtAdAHrFqWr0B0VfqJcvduToTJrpAhyqFXeOxn626CQBeAisz48J7fFkHUnoUyiYHh5iBLHwUIcW68oreA1kb6B0vk1ivx/LGTN438B05BwXyH6qI+XQ4DxPe/Fm6TMGbCK8VBKACinxm8A==",
+                "SigningCertUrl": "https://sns.eu-central-1.amazonaws.com/SimpleNotificationService-60eadc530605d63b8e62a523676ef735.pem",
+                "UnsubscribeUrl": "https://sns.eu-central-1.amazonaws.com/?Action=Unsubscribe&SubscriptionArn=arn:aws:sns:eu-central-1:338472043295:eform-submissions:345943a1-f48c-4b99-a7b5-9b8dd79b7180",
+                "MessageAttributes": {
+                    "BRP_data": {
+                        "Type": "String",
+                        "Value": "false"
+                    },
+                    "AppId": {
+                        "Type": "String",
+                        "Value": "TDL"
+                    },
+                    "SnsFilter": {
+                        "Type": "String",
+                        "Value": "postSubmission"
+                    },
+                    "KVK_data": {
+                        "Type": "String",
+                        "Value": "true"
+                    }
+                }
+            }
+        }
+    ]
+}
