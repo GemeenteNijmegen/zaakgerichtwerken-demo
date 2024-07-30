@@ -27,8 +27,6 @@ export async function createZaak() {
     throw Error('Not a 2xx response');
   }
   return json.url;
-
-
 }
 
 
@@ -56,6 +54,4 @@ export async function addStatusToZaak(zaak: string, status: string) {
     throw Error('Not a 2xx response');
   }
   return json.url;
-
-
 }

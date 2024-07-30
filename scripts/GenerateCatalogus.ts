@@ -1,7 +1,6 @@
 import { jwtToken } from './ZgwToken';
 
 const CATALOGI_API = 'https://lb.zgw.sandbox-marnix.csp-nijmegen.nl/open-zaak/catalogi/api/v1/';
-const RISN_NIJMEGEN = '001479179';
 
 const clientId = process.env.ZGW_CLIENT_ID!;
 const clientSecret = process.env.ZGW_CLIENT_SECRET!;
@@ -17,6 +16,7 @@ type ApiResponse = {
 };
 
 async function apiRequest(endpoint: string, method: string, body: object): Promise<ApiResponse> {
+  console.log('fetching ' + CATALOGI_API + endpoint);
   const response = await fetch(CATALOGI_API + endpoint, {
     method,
     body: JSON.stringify(body),
@@ -37,12 +37,12 @@ async function apiRequest(endpoint: string, method: string, body: object): Promi
   return json;
 }
 
-async function createNijmegenCatalogus(suffix?: string): Promise<string> {
+async function createNijmegenCatalogus(domein?: string): Promise<string> {
   const catalogusData = {
-    domein: 'NYMGN',
-    rsin: RISN_NIJMEGEN,
+    domein: domein ?? 'NYMGN',
+    rsin: process.env.RSIN_NIJMEGEN,
     contactpersoonBeheerNaam: 'Gemeente Nijmegen',
-    naam: 'Gemeente Nijmegen' + (suffix ? ' ' + suffix : ''),
+    naam: 'Gemeente Nijmegen ' + domein,
   };
 
   const catalogus = await apiRequest('catalogussen', 'POST', catalogusData);
@@ -115,24 +115,9 @@ async function createResultaattype(zaaktype: string, naam: string): Promise<void
 }
 
 
-export async function publishZaaktype(zaaktype: string): Promise<void> {
-
-  const response = await fetch(zaaktype + '/publish', {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${jwt}`,
-      'Content-Type': 'application/json',
-    },
-  });
-
-  console.log(JSON.stringify(await response.json(), null, 4));
-
-}
-
-
-export async function generateCatalogus(): Promise<void> {
+export async function generateCatalogus(publish?: boolean): Promise<void> {
   try {
-    const catalogus = await createNijmegenCatalogus('- 2');
+    const catalogus = await createNijmegenCatalogus('EEN');
     console.log('Created catalogus: ', catalogus);
 
     const zaaktypeOpenForms = await createZaaktype(catalogus, 'openforms');
@@ -153,10 +138,54 @@ export async function generateCatalogus(): Promise<void> {
     await createResultaattype(zaaktypeOpenForms, 'ResultaatOpenForms');
     await createResultaattype(zaaktypeWebformulieren, 'ResultaatWebformulieren');
 
-    // await publishZaaktype(zaaktypeOpenForms);
-    // await publishZaaktype(zaaktypeWebformulieren);
+    const informatieObjectType = await createInformatieObjectType(catalogus);
+    await linkInformatieObjectTypeToZaakType(informatieObjectType.url, zaaktypeOpenForms, 1);
+    await linkInformatieObjectTypeToZaakType(informatieObjectType.url, zaaktypeWebformulieren, 1);
+    if (publish) {
+      await publishResource(informatieObjectType.url);
+
+      await publishResource(zaaktypeOpenForms);
+      await publishResource(zaaktypeWebformulieren);
+    }
 
   } catch (err) {
     console.error('Error generating catalogus:', err);
   }
+}
+
+export async function createInformatieObjectType(catalogus: string) {
+  const informatieObjectType = {
+    catalogus: catalogus,
+    omschrijving: 'Document',
+    vertrouwelijkheidaanduiding: 'zaakvertrouwelijk',
+    beginGeldigheid: new Date().toISOString().substring(0, 'yyyy-mm-dd'.length),
+    informatieobjectcategorie: 'bijlages', //geen idee wat hier moet staan
+  };
+
+  return apiRequest('informatieobjecttypen', 'POST', informatieObjectType);
+
+}
+
+export async function linkInformatieObjectTypeToZaakType(informatieobjecttype: string, zaaktype: string, volgnummer: number) {
+  const link = {
+    zaaktype,
+    informatieobjecttype,
+    volgnummer,
+    richting: 'inkomend',
+  };
+  await apiRequest('zaaktype-informatieobjecttypen', 'POST', link);
+}
+
+
+export async function publishResource(resourceUrl: string): Promise<void> {
+  const response = await fetch(resourceUrl + '/publish', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${jwt}`,
+      'Content-Type': 'application/json',
+    },
+  });
+
+  console.log(JSON.stringify(await response.json(), null, 4));
+
 }
