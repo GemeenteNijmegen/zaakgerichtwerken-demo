@@ -1,5 +1,5 @@
 import { aws_ec2 } from 'aws-cdk-lib';
-import { Port, SecurityGroup } from 'aws-cdk-lib/aws-ec2';
+import { ISecurityGroup, Port, SecurityGroup } from 'aws-cdk-lib/aws-ec2';
 import { EfsVolumeConfiguration, FargateService } from 'aws-cdk-lib/aws-ecs';
 import { AccessPoint, FileSystem } from 'aws-cdk-lib/aws-efs';
 import { Effect, PolicyStatement } from 'aws-cdk-lib/aws-iam';
@@ -37,6 +37,7 @@ export abstract class ComposedZgwService extends Construct {
 
   private readonly zgwServices: Record<string, ZgwService> = {};
   private privateFileSystemConfig?: EfsVolumeConfiguration;
+  private privateFileSystemSecurityGroup?: ISecurityGroup;
 
   constructor(scope: Construct, id: string, props: ComposedZgwServiceProps) {
     super(scope, id);
@@ -91,14 +92,14 @@ export abstract class ComposedZgwService extends Construct {
   }
 
   protected createFileSytem() {
-    const efsSecurityGroup = new aws_ec2.SecurityGroup(this, 'efs-security-group', {
+    this.privateFileSystemSecurityGroup = new aws_ec2.SecurityGroup(this, 'efs-security-group', {
       vpc: this.props.zgwCluster.vpc,
     });
 
     const fileSystem = new FileSystem(this, 'EfsFileSystem', {
       encrypted: true,
       vpc: this.props.zgwCluster.vpc,
-      securityGroup: efsSecurityGroup,
+      securityGroup: this.privateFileSystemSecurityGroup,
     });
 
     var accessPoint = new AccessPoint(this, 'volumeAccessPoint', {
@@ -127,33 +128,40 @@ export abstract class ComposedZgwService extends Construct {
   }
 
   protected registerZgwService(name: string, zgwService: ZgwService) {
-    const mediaVolume = {
-      // Use an Elastic FileSystem
-      name: 'media',
-      efsVolumeConfiguration: this.privateFileSystemConfig,
-    };
-
-    const privateMediaVolume = {
-      // Use an Elastic FileSystem
-      name: 'private_media',
-      efsVolumeConfiguration: this.privateFileSystemConfig,
-    };
-
-    zgwService.service.taskDefinition.addVolume(mediaVolume);
-    zgwService.service.taskDefinition.defaultContainer?.addMountPoints({
-      readOnly: false,
-      containerPath: '/app/media',
-      sourceVolume: mediaVolume.name,
-    });
-
-    zgwService.service.taskDefinition.addVolume(privateMediaVolume);
-    zgwService.service.taskDefinition.defaultContainer?.addMountPoints({
-      readOnly: false,
-      containerPath: '/app/private_media',
-      sourceVolume: privateMediaVolume.name,
-    });
-
     this.zgwServices[name] = zgwService;
+
+    if (this.props.createFileSystem) {
+      const mediaVolume = {
+      // Use an Elastic FileSystem
+        name: 'media',
+        efsVolumeConfiguration: this.privateFileSystemConfig,
+      };
+
+      const privateMediaVolume = {
+      // Use an Elastic FileSystem
+        name: 'private_media',
+        efsVolumeConfiguration: this.privateFileSystemConfig,
+      };
+
+      zgwService.service.taskDefinition.addVolume(mediaVolume);
+      zgwService.service.taskDefinition.defaultContainer?.addMountPoints({
+        readOnly: false,
+        containerPath: '/app/media',
+        sourceVolume: mediaVolume.name,
+      });
+
+      zgwService.service.taskDefinition.addVolume(privateMediaVolume);
+      zgwService.service.taskDefinition.defaultContainer?.addMountPoints({
+        readOnly: false,
+        containerPath: '/app/private_media',
+        sourceVolume: privateMediaVolume.name,
+      });
+
+      zgwService.service.connections.securityGroups.forEach(sg => {
+        this.privateFileSystemSecurityGroup?.addIngressRule(sg, Port.NFS);
+      });
+    }
+
     this.allowAccessToSecrets(zgwService.service);
     this.setupServiceConnectivity(name, zgwService.service);
   }
