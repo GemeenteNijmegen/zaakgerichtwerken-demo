@@ -51,6 +51,11 @@ export class OpenZaakService extends ComposedZgwService {
     this.setupEfsLambda();
   }
 
+  /**
+   *
+   * See: https://open-zaak.readthedocs.io/en/stable/installation/config/env_config.html
+   * @returns
+   */
   getEnvironmentConfiguration() {
     const environment = {
       DJANGO_SETTINGS_MODULE: 'openzaak.conf.docker',
@@ -78,6 +83,10 @@ export class OpenZaakService extends ComposedZgwService {
       LOG_REQUESTS: 'True',
       LOG_QUERIES: 'False',
       DEBUG: 'True',
+
+
+      // See https://django-sendfile2.readthedocs.io/en/latest/backends.html
+      SENDFILE_BACKEND: 'django_sendfile.backends.simple', // Django backend to download files?
 
       // Openzaak specific stuff
       OPENZAAK_DOMAIN: this.props.zgwCluster.alb.getDomain(),
