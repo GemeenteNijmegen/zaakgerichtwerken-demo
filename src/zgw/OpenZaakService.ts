@@ -76,7 +76,7 @@ export class OpenZaakService extends ComposedZgwService {
       UWSGI_PORT: OpenZaakService.PORT.toString(),
       LOG_LEVEL: 'DEBUG',
       LOG_REQUESTS: 'True',
-      LOG_QUERIES: 'True',
+      LOG_QUERIES: 'False',
       DEBUG: 'True',
 
       // Openzaak specific stuff

@@ -86,7 +86,7 @@ export class OpenNotificatiesService extends ComposedZgwService {
       UWSGI_PORT: OpenNotificatiesService.PORT.toString(),
       LOG_LEVEL: 'DEBUG',
       LOG_REQUESTS: 'True',
-      LOG_QUERIES: 'True',
+      LOG_QUERIES: 'False',
       DEBUG: 'True',
 
       // Open notificaties specific stuff
