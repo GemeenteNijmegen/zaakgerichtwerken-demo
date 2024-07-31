@@ -109,7 +109,7 @@ export class OpenZaakService extends ComposedZgwService {
 
   setupEfsLambda() {
 
-    if (!this.fileSystem) {
+    if (!this.fileSystem || !this.fileSystemAccessPoint) {
       throw Error('Filesystem should be set!');
     }
 
@@ -117,7 +117,7 @@ export class OpenZaakService extends ComposedZgwService {
       vpc: this.props.zgwCluster.vpc,
       filesystem: {
         config: {
-          arn: this.fileSystem.fileSystemArn,
+          arn: this.fileSystemAccessPoint.accessPointArn,
           localMountPath: '/efs',
         },
       },
