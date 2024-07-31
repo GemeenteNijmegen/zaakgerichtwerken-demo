@@ -2,13 +2,14 @@ import * as fs from 'fs';
 
 export async function handler(_event: any) {
 
-  const root = fs.readdirSync('/efs');
-  console.log(JSON.stringify(root));
+  dir('/mnt/efs/');
+  dir('/mnt/efs/app');
+  dir('/mnt/efs/app/private-media/uploads/2024/07');
+  dir('/mnt/efs/uploads/2024/07');
 
-  const data = fs.readdirSync('/efs/data');
-  console.log(JSON.stringify(data));
+}
 
-  const app = fs.readdirSync('/efs/app');
-  console.log(JSON.stringify(app));
-
+function dir(path: string) {
+  const root = fs.readdirSync('path');
+  console.log(path, JSON.stringify(root));
 }

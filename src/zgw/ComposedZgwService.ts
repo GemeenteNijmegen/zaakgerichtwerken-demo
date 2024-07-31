@@ -133,30 +133,26 @@ export abstract class ComposedZgwService extends Construct {
     this.zgwServices[name] = zgwService;
 
     if (this.props.createFileSystem) {
-      const mediaVolume = {
-      // Use an Elastic FileSystem
+
+
+      zgwService.service.taskDefinition.addVolume({
         name: 'media',
         efsVolumeConfiguration: this.privateFileSystemConfig,
-      };
-
-      const privateMediaVolume = {
-      // Use an Elastic FileSystem
-        name: 'private_media',
-        efsVolumeConfiguration: this.privateFileSystemConfig,
-      };
-
-      zgwService.service.taskDefinition.addVolume(mediaVolume);
+      });
       zgwService.service.taskDefinition.defaultContainer?.addMountPoints({
         readOnly: false,
         containerPath: '/app/media',
-        sourceVolume: mediaVolume.name,
+        sourceVolume: 'media',
       });
 
-      zgwService.service.taskDefinition.addVolume(privateMediaVolume);
+      zgwService.service.taskDefinition.addVolume({
+        name: 'private_media',
+        efsVolumeConfiguration: this.privateFileSystemConfig,
+      });
       zgwService.service.taskDefinition.defaultContainer?.addMountPoints({
         readOnly: false,
-        containerPath: '/app/private_media',
-        sourceVolume: privateMediaVolume.name,
+        containerPath: '/app/private-media',
+        sourceVolume: 'private_media',
       });
 
       zgwService.service.connections.securityGroups.forEach(sg => {
