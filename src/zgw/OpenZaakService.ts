@@ -118,7 +118,7 @@ export class OpenZaakService extends ComposedZgwService {
       filesystem: {
         config: {
           arn: this.fileSystemAccessPoint.accessPointArn,
-          localMountPath: '/efs',
+          localMountPath: '/mnt/efs',
         },
       },
     });
