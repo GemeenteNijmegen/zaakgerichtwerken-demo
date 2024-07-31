@@ -37,7 +37,9 @@ export abstract class ComposedZgwService extends Construct {
 
   private readonly zgwServices: Record<string, ZgwService> = {};
   private privateFileSystemConfig?: EfsVolumeConfiguration;
-  private privateFileSystemSecurityGroup?: ISecurityGroup;
+  protected privateFileSystemSecurityGroup?: ISecurityGroup;
+  protected fileSystemAccessPoint?: AccessPoint;
+  protected fileSystem?: FileSystem;
 
   constructor(scope: Construct, id: string, props: ComposedZgwServiceProps) {
     super(scope, id);
@@ -96,14 +98,14 @@ export abstract class ComposedZgwService extends Construct {
       vpc: this.props.zgwCluster.vpc,
     });
 
-    const fileSystem = new FileSystem(this, 'EfsFileSystem', {
+    this.fileSystem = new FileSystem(this, 'EfsFileSystem', {
       encrypted: true,
       vpc: this.props.zgwCluster.vpc,
       securityGroup: this.privateFileSystemSecurityGroup,
     });
 
-    var accessPoint = new AccessPoint(this, 'volumeAccessPoint', {
-      fileSystem: fileSystem,
+    this.fileSystemAccessPoint = new AccessPoint(this, 'volumeAccessPoint', {
+      fileSystem: this.fileSystem,
 
       path: '/data',
       createAcl: {
@@ -119,10 +121,10 @@ export abstract class ComposedZgwService extends Construct {
 
     this.privateFileSystemConfig = {
       authorizationConfig: {
-        accessPointId: accessPoint.accessPointId,
+        accessPointId: this.fileSystemAccessPoint.accessPointId,
         iam: 'ENABLED',
       },
-      fileSystemId: fileSystem.fileSystemId,
+      fileSystemId: this.fileSystem.fileSystemId,
       transitEncryption: 'ENABLED',
     };
   }

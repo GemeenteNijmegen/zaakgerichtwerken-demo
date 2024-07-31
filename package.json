@@ -4,6 +4,8 @@
     "build": "npx projen build",
     "bump": "npx projen bump",
     "bundle": "npx projen bundle",
+    "bundle:lambdas/efs/efs.lambda": "npx projen bundle:lambdas/efs/efs.lambda",
+    "bundle:lambdas/efs/efs.lambda:watch": "npx projen bundle:lambdas/efs/efs.lambda:watch",
     "bundle:lambdas/postgres/postgres.lambda": "npx projen bundle:lambdas/postgres/postgres.lambda",
     "bundle:lambdas/postgres/postgres.lambda:watch": "npx projen bundle:lambdas/postgres/postgres.lambda:watch",
     "clobber": "npx projen clobber",

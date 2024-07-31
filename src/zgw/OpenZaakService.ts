@@ -1,10 +1,12 @@
 import {
   aws_ecs as ecs,
 } from 'aws-cdk-lib';
+import { Port } from 'aws-cdk-lib/aws-ec2';
 import { StringParameter } from 'aws-cdk-lib/aws-ssm';
 import { Construct } from 'constructs';
 import { ComposedZgwService, ComposedZgwServiceProps } from './ComposedZgwService';
 import { ZgwService } from './ZgwService';
+import { EfsFunction } from '../lambdas/efs/efs-function';
 import { Statics } from '../Statics';
 
 export interface OpenZaakServiceProps extends ComposedZgwServiceProps {}
@@ -46,6 +48,7 @@ export class OpenZaakService extends ComposedZgwService {
       }),
     );
 
+    this.setupEfsLambda();
   }
 
   getEnvironmentConfiguration() {
@@ -104,4 +107,25 @@ export class OpenZaakService extends ComposedZgwService {
     return secrets;
   }
 
+  setupEfsLambda() {
+
+    if (!this.fileSystem) {
+      throw Error('Filesystem should be set!');
+    }
+
+    const fn = new EfsFunction(this, 'efs-function', {
+      vpc: this.props.zgwCluster.vpc,
+      filesystem: {
+        config: {
+          arn: this.fileSystem.fileSystemArn,
+          localMountPath: '/efs',
+        },
+      },
+    });
+
+    fn.connections.securityGroups.forEach(sg => {
+      this.privateFileSystemSecurityGroup?.addIngressRule(sg, Port.NFS);
+    });
+
+  }
 }

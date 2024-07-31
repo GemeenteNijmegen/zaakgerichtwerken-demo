@@ -43,6 +43,7 @@ export class OpenKlantService extends ComposedZgwService {
         secrets: this.getSecretConfiguration(),
         zgwCluster: props.zgwCluster,
         command: ['/celery_worker.sh'],
+        desiredtaskcount: 0, // TODO enable? Do we need it? For now it does not start
       }),
     );
 
