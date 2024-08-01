@@ -8,14 +8,13 @@ if (!clientId || !clientSecret) {
   throw new Error('Client ID and Secret must be provided');
 }
 
-const jwt = jwtToken(clientId, 'marnix-local', clientSecret);
-
 type ApiResponse = {
   url: string;
   [key: string]: any;
 };
 
 async function apiRequest(endpoint: string, method: string, body: object): Promise<ApiResponse> {
+  const jwt = jwtToken(clientId, 'marnix-local', clientSecret);
   console.log('fetching ' + CATALOGI_API + endpoint);
   const response = await fetch(CATALOGI_API + endpoint, {
     method,
@@ -178,6 +177,8 @@ export async function linkInformatieObjectTypeToZaakType(informatieobjecttype: s
 
 
 export async function publishResource(resourceUrl: string): Promise<void> {
+  const jwt = jwtToken(clientId, 'marnix-local', clientSecret);
+
   const response = await fetch(resourceUrl + '/publish', {
     method: 'POST',
     headers: {

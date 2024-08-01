@@ -1,9 +1,9 @@
 import { jwtToken } from './ZgwToken';
 
 const ZAKEN_API = 'https://lb.zgw.sandbox-marnix.csp-nijmegen.nl/open-zaak/zaken/api/v1/';
-const jwt = jwtToken(process.env.ZGW_CLIENT_ID!, 'marnix-local', process.env.ZGW_CLIENT_SECRET!);
 
 export async function createZaak() {
+  const jwt = jwtToken(process.env.ZGW_CLIENT_ID!, 'marnix-local', process.env.ZGW_CLIENT_SECRET!);
 
   const response = await fetch(ZAKEN_API + 'zaken', {
     method: 'POST',
@@ -31,6 +31,7 @@ export async function createZaak() {
 
 
 export async function addStatusToZaak(zaak: string, status: string) {
+  const jwt = jwtToken(process.env.ZGW_CLIENT_ID!, 'marnix-local', process.env.ZGW_CLIENT_SECRET!);
 
   const response = await fetch(ZAKEN_API + 'statussen', {
     method: 'POST',
