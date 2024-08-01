@@ -81,8 +81,8 @@ export class ObjectsService extends ComposedZgwService {
       OBJECTS_SUPERUSER_PASSWORD: 'admin',
 
       // Celery
-      CELERY_BROKER_URL: this.props.zgwCluster.redis.redisCluster.attrRedisEndpointAddress + ':' + this.props.zgwCluster.redis.redisCluster.attrRedisEndpointPort + '/objects-celery',
-      CELERY_RESULT_BACKEND: this.props.zgwCluster.redis.redisCluster.attrRedisEndpointAddress + ':' + this.props.zgwCluster.redis.redisCluster.attrRedisEndpointPort + '/objects-celery',
+      CELERY_BROKER_URL: this.props.zgwCluster.redis.redisCluster.attrRedisEndpointAddress + ':' + this.props.zgwCluster.redis.redisCluster.attrRedisEndpointPort + '/10',
+      CELERY_RESULT_BACKEND: this.props.zgwCluster.redis.redisCluster.attrRedisEndpointAddress + ':' + this.props.zgwCluster.redis.redisCluster.attrRedisEndpointPort + '/10',
       CELERY_LOGLEVEL: 'DEBUG',
 
     };
