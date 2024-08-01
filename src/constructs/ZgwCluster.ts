@@ -21,12 +21,15 @@ export class ZgwCluster extends Construct {
   // readonly api: ApiConstruct;
   readonly cluster: FargateCluster;
   readonly redis: RedisConstruct;
+  readonly vpc: IVpc;
 
   constructor(scope: Construct, id: string, props: ZgwClusterProps) {
     super(scope, id);
     this.props = props;
 
     const dbSecret = this.importDatabaseSecret();
+
+    this.vpc = this.props.vpc;
 
     this.alb = new LoadBalancerConstruct(this, 'loadbalancer', {
       hostedzone: this.props.hostedzone,

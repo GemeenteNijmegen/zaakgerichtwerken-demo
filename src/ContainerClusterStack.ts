@@ -84,6 +84,7 @@ export class ContainerClusterStack extends Stack {
     return new OpenZaakService(this, 'open-zaak', {
       zgwCluster: this.zgwCluster,
       useSpotInstances: true,
+      createFileSystem: true,
     });
   }
 

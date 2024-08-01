@@ -148,6 +148,7 @@
         "devDependencies": [
           "**/test/**",
           "**/build-tools/**",
+          "src/lambdas/efs/efs.lambda.ts",
           "src/lambdas/postgres/postgres.lambda.ts",
           ".projenrc.ts",
           "projenrc/**/*.ts"

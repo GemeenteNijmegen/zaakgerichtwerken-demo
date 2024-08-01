@@ -1,5 +1,7 @@
-import { Port, SecurityGroup } from 'aws-cdk-lib/aws-ec2';
-import { FargateService } from 'aws-cdk-lib/aws-ecs';
+import { aws_ec2 } from 'aws-cdk-lib';
+import { ISecurityGroup, Port, SecurityGroup } from 'aws-cdk-lib/aws-ec2';
+import { EfsVolumeConfiguration, FargateService } from 'aws-cdk-lib/aws-ecs';
+import { AccessPoint, FileSystem } from 'aws-cdk-lib/aws-efs';
 import { Effect, PolicyStatement } from 'aws-cdk-lib/aws-iam';
 import { ISecret, Secret } from 'aws-cdk-lib/aws-secretsmanager';
 import { StringParameter } from 'aws-cdk-lib/aws-ssm';
@@ -21,6 +23,11 @@ export interface ComposedZgwServiceProps {
    * @default false
    */
   useSpotInstances?: boolean;
+
+  /**
+   * Create file system
+   */
+  createFileSystem?: boolean;
 }
 
 export abstract class ComposedZgwService extends Construct {
@@ -29,11 +36,19 @@ export abstract class ComposedZgwService extends Construct {
   protected readonly databaseCredentials: ISecret;
 
   private readonly zgwServices: Record<string, ZgwService> = {};
+  private privateFileSystemConfig?: EfsVolumeConfiguration;
+  protected privateFileSystemSecurityGroup?: ISecurityGroup;
+  protected fileSystemAccessPoint?: AccessPoint;
+  protected fileSystem?: FileSystem;
 
   constructor(scope: Construct, id: string, props: ComposedZgwServiceProps) {
     super(scope, id);
     this.props = props;
     this.databaseCredentials = this.loadDatabaseCredentials();
+
+    if (props.createFileSystem) {
+      this.createFileSytem();
+    }
   }
 
   abstract getEnvironmentConfiguration(): any;
@@ -78,8 +93,73 @@ export abstract class ComposedZgwService extends Construct {
     this.databaseCredentials.grantRead(service.taskDefinition.executionRole!);
   }
 
+  protected createFileSytem() {
+    this.privateFileSystemSecurityGroup = new aws_ec2.SecurityGroup(this, 'efs-security-group', {
+      vpc: this.props.zgwCluster.vpc,
+    });
+
+    this.fileSystem = new FileSystem(this, 'EfsFileSystem', {
+      encrypted: true,
+      vpc: this.props.zgwCluster.vpc,
+      securityGroup: this.privateFileSystemSecurityGroup,
+    });
+
+    this.fileSystemAccessPoint = new AccessPoint(this, 'volumeAccessPoint', {
+      fileSystem: this.fileSystem,
+
+      path: '/data',
+      createAcl: {
+        ownerGid: '1000',
+        ownerUid: '1000',
+        permissions: '755',
+      },
+      posixUser: {
+        uid: '1000',
+        gid: '1000',
+      },
+    });
+
+    this.privateFileSystemConfig = {
+      authorizationConfig: {
+        accessPointId: this.fileSystemAccessPoint.accessPointId,
+        iam: 'ENABLED',
+      },
+      fileSystemId: this.fileSystem.fileSystemId,
+      transitEncryption: 'ENABLED',
+    };
+  }
+
   protected registerZgwService(name: string, zgwService: ZgwService) {
     this.zgwServices[name] = zgwService;
+
+    if (this.props.createFileSystem) {
+
+
+      zgwService.service.taskDefinition.addVolume({
+        name: 'media',
+        efsVolumeConfiguration: this.privateFileSystemConfig,
+      });
+      zgwService.service.taskDefinition.defaultContainer?.addMountPoints({
+        readOnly: false,
+        containerPath: '/app/media',
+        sourceVolume: 'media',
+      });
+
+      zgwService.service.taskDefinition.addVolume({
+        name: 'private_media',
+        efsVolumeConfiguration: this.privateFileSystemConfig,
+      });
+      zgwService.service.taskDefinition.defaultContainer?.addMountPoints({
+        readOnly: false,
+        containerPath: '/app/private-media',
+        sourceVolume: 'private_media',
+      });
+
+      zgwService.service.connections.securityGroups.forEach(sg => {
+        this.privateFileSystemSecurityGroup?.addIngressRule(sg, Port.NFS);
+      });
+    }
+
     this.allowAccessToSecrets(zgwService.service);
     this.setupServiceConnectivity(name, zgwService.service);
   }

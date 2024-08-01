@@ -46,7 +46,28 @@
       "description": "Prepare assets",
       "steps": [
         {
+          "spawn": "bundle:lambdas/efs/efs.lambda"
+        },
+        {
           "spawn": "bundle:lambdas/postgres/postgres.lambda"
+        }
+      ]
+    },
+    "bundle:lambdas/efs/efs.lambda": {
+      "name": "bundle:lambdas/efs/efs.lambda",
+      "description": "Create a JavaScript bundle from src/lambdas/efs/efs.lambda.ts",
+      "steps": [
+        {
+          "exec": "esbuild --bundle src/lambdas/efs/efs.lambda.ts --target=\"node20\" --platform=\"node\" --outfile=\"assets/lambdas/efs/efs.lambda/index.js\" --tsconfig=\"tsconfig.dev.json\" --external:@aws-sdk/*"
+        }
+      ]
+    },
+    "bundle:lambdas/efs/efs.lambda:watch": {
+      "name": "bundle:lambdas/efs/efs.lambda:watch",
+      "description": "Continuously update the JavaScript bundle from src/lambdas/efs/efs.lambda.ts",
+      "steps": [
+        {
+          "exec": "esbuild --bundle src/lambdas/efs/efs.lambda.ts --target=\"node20\" --platform=\"node\" --outfile=\"assets/lambdas/efs/efs.lambda/index.js\" --tsconfig=\"tsconfig.dev.json\" --external:@aws-sdk/* --watch"
         }
       ]
     },
