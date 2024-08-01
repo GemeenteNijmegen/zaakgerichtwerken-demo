@@ -1,0 +1,1 @@
+export const describeLocalScripts = process.env.RUN_LOCAL_SCRIPTS ? describe : describe.skip;

@@ -20,7 +20,7 @@ export class ObjectsService extends ComposedZgwService {
     this.registerZgwService(
       'objects',
       new ZgwService(this, 'objects', {
-        containerImage: 'maykinmedia/objects-api',
+        containerImage: 'maykinmedia/objects-api:2.4.0',
         databaseCredentials: this.databaseCredentials,
         environment: this.getEnvironmentConfiguration(),
         secrets: this.getSecretConfiguration(),
@@ -37,7 +37,7 @@ export class ObjectsService extends ComposedZgwService {
     this.registerZgwService(
       'objects-celery',
       new ZgwService(this, 'objects-celery', {
-        containerImage: 'maykinmedia/objects-api',
+        containerImage: 'maykinmedia/objects-api:2.4.0',
         databaseCredentials: this.databaseCredentials,
         environment: this.getEnvironmentConfiguration(),
         secrets: this.getSecretConfiguration(),
