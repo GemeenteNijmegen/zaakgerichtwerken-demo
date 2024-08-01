@@ -82,8 +82,8 @@ export class OpenKlantService extends ComposedZgwService {
       OBJECTS_SUPERUSER_PASSWORD: 'admin',
 
       // Celery
-      CELERY_BROKER_URL: this.props.zgwCluster.redis.redisCluster.attrRedisEndpointAddress + ':' + this.props.zgwCluster.redis.redisCluster.attrRedisEndpointPort + '/open-klant-celery',
-      CELERY_RESULT_BACKEND: this.props.zgwCluster.redis.redisCluster.attrRedisEndpointAddress + ':' + this.props.zgwCluster.redis.redisCluster.attrRedisEndpointPort + '/open-klant-celery',
+      CELERY_BROKER_URL: 'redis://'+this.props.zgwCluster.redis.redisCluster.attrRedisEndpointAddress + ':' + this.props.zgwCluster.redis.redisCluster.attrRedisEndpointPort + '/open-klant-celery',
+      CELERY_RESULT_BACKEND: 'redis://'+this.props.zgwCluster.redis.redisCluster.attrRedisEndpointAddress + ':' + this.props.zgwCluster.redis.redisCluster.attrRedisEndpointPort + '/open-klant-celery',
       CELERY_LOGLEVEL: 'DEBUG',
     };
     return environment;
