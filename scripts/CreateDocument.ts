@@ -1,7 +1,6 @@
 import { jwtToken } from './ZgwToken';
 
 const DOCUMENTEN_API = 'https://lb.zgw.sandbox-marnix.csp-nijmegen.nl/open-zaak/documenten/api/v1/';
-const jwt = jwtToken(process.env.ZGW_CLIENT_ID!, 'marnix-local', process.env.ZGW_CLIENT_SECRET!);
 
 type ApiResponse = {
   url: string;
@@ -9,6 +8,7 @@ type ApiResponse = {
 };
 
 async function apiRequest(endpoint: string, method: string, body: object): Promise<ApiResponse> {
+  const jwt = jwtToken(process.env.ZGW_CLIENT_ID!, 'marnix-local', process.env.ZGW_CLIENT_SECRET!);
   console.log('fetching ' + DOCUMENTEN_API + endpoint);
   const response = await fetch(DOCUMENTEN_API + endpoint, {
     method,

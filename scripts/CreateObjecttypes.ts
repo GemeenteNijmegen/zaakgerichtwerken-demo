@@ -4,7 +4,7 @@ const OBJECTTYPES_API = 'https://lb.zgw.sandbox-marnix.csp-nijmegen.nl/objecttyp
 // const OBJECTS_API = 'https://lb.zgw.sandbox-marnix.csp-nijmegen.nl/objects/api/v2/';
 // const RISN_NIJMEGEN = '001479179';
 
-const token = '20c0b165731c08f55f9e680b708d11241378d8c3';
+const token = process.env.OBJECTTYPES_TOKEN;
 
 type ApiResponse = {
   url: string;
