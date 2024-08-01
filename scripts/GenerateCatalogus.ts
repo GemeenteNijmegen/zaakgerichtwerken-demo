@@ -2,11 +2,6 @@ import { jwtToken } from './ZgwToken';
 
 const CATALOGI_API = 'https://lb.zgw.sandbox-marnix.csp-nijmegen.nl/open-zaak/catalogi/api/v1/';
 
-const clientId = process.env.ZGW_CLIENT_ID!;
-const clientSecret = process.env.ZGW_CLIENT_SECRET!;
-if (!clientId || !clientSecret) {
-  throw new Error('Client ID and Secret must be provided');
-}
 
 type ApiResponse = {
   url: string;
@@ -14,6 +9,11 @@ type ApiResponse = {
 };
 
 async function apiRequest(endpoint: string, method: string, body: object): Promise<ApiResponse> {
+  const clientId = process.env.ZGW_CLIENT_ID!;
+  const clientSecret = process.env.ZGW_CLIENT_SECRET!;
+  if (!clientId || !clientSecret) {
+    throw new Error('Client ID and Secret must be provided');
+  }
   const jwt = jwtToken(clientId, 'marnix-local', clientSecret);
   console.log('fetching ' + CATALOGI_API + endpoint);
   const response = await fetch(CATALOGI_API + endpoint, {
@@ -177,6 +177,11 @@ export async function linkInformatieObjectTypeToZaakType(informatieobjecttype: s
 
 
 export async function publishResource(resourceUrl: string): Promise<void> {
+  const clientId = process.env.ZGW_CLIENT_ID!;
+  const clientSecret = process.env.ZGW_CLIENT_SECRET!;
+  if (!clientId || !clientSecret) {
+    throw new Error('Client ID and Secret must be provided');
+  }
   const jwt = jwtToken(clientId, 'marnix-local', clientSecret);
 
   const response = await fetch(resourceUrl + '/publish', {
