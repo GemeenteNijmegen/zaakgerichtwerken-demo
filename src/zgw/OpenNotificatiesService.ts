@@ -77,7 +77,7 @@ export class OpenNotificatiesService extends ComposedZgwService {
       OPENNOTIFICATIES_SUPERUSER_USERNAME: 'admin',
       OPENNOTIFICATIES_SUPERUSER_EMAIL: 'admin@localhost',
       DJANGO_SUPERUSER_PASSWORD: 'admin',
-      CELERY_RESULT_BACKEND: 'redis://'+ this.props.zgwCluster.redis.redisCluster.attrRedisEndpointAddress + ':' + this.props.zgwCluster.redis.redisCluster.attrRedisEndpointPort + '/2',
+      CELERY_RESULT_BACKEND: 'redis://'+ this.props.zgwCluster.redis.redisCluster.attrRedisEndpointAddress + ':' + this.props.zgwCluster.redis.redisCluster.attrRedisEndpointPort + Statics.redisCeleryPathNotifications,
       CELERY_LOGLEVEL: 'DEBUG',
       CELERY_WORKER_CONCURRENCY: '4',
       RABBITMQ_HOST: 'rabbitmq.zgw.local',

@@ -56,8 +56,8 @@ export class OpenKlantService extends ComposedZgwService {
       DB_HOST: StringParameter.valueForStringParameter(this, Statics.ssmDbHostname),
       DB_PORT: StringParameter.valueForStringParameter(this, Statics.ssmDbPort),
       ALLOWED_HOSTS: '*', // See loadbalancer target remark above this.props.zgwCluster.alb.getDomain(),
-      CACHE_DEFAULT: this.props.zgwCluster.redis.redisCluster.attrRedisEndpointAddress + ':' + this.props.zgwCluster.redis.redisCluster.attrRedisEndpointPort + '/open-klant',
-      CACHE_AXES: this.props.zgwCluster.redis.redisCluster.attrRedisEndpointAddress + ':' + this.props.zgwCluster.redis.redisCluster.attrRedisEndpointPort + '/open-klant',
+      CACHE_DEFAULT: this.props.zgwCluster.redis.redisCluster.attrRedisEndpointAddress + ':' + this.props.zgwCluster.redis.redisCluster.attrRedisEndpointPort + Statics.redisCachePathKlant,
+      CACHE_AXES: this.props.zgwCluster.redis.redisCluster.attrRedisEndpointAddress + ':' + this.props.zgwCluster.redis.redisCluster.attrRedisEndpointPort + + Statics.redisCachePathKlant,
       SUBPATH: '/open-klant',
       IS_HTTPS: 'True',
       UWSGI_PORT: OpenKlantService.PORT.toString(),
@@ -82,8 +82,8 @@ export class OpenKlantService extends ComposedZgwService {
       OBJECTS_SUPERUSER_PASSWORD: 'admin',
 
       // Celery
-      CELERY_BROKER_URL: 'redis://'+this.props.zgwCluster.redis.redisCluster.attrRedisEndpointAddress + ':' + this.props.zgwCluster.redis.redisCluster.attrRedisEndpointPort + '/open-klant-celery',
-      CELERY_RESULT_BACKEND: 'redis://'+this.props.zgwCluster.redis.redisCluster.attrRedisEndpointAddress + ':' + this.props.zgwCluster.redis.redisCluster.attrRedisEndpointPort + '/open-klant-celery',
+      CELERY_BROKER_URL: 'redis://'+this.props.zgwCluster.redis.redisCluster.attrRedisEndpointAddress + ':' + this.props.zgwCluster.redis.redisCluster.attrRedisEndpointPort + Statics.redisCeleryPathKlant,
+      CELERY_RESULT_BACKEND: 'redis://'+this.props.zgwCluster.redis.redisCluster.attrRedisEndpointAddress + ':' + this.props.zgwCluster.redis.redisCluster.attrRedisEndpointPort + Statics.redisCeleryPathKlant,
       CELERY_LOGLEVEL: 'DEBUG',
     };
     return environment;

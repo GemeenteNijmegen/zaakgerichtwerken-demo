@@ -20,4 +20,22 @@ export class Statics {
     region: 'eu-central-1',
   };
 
+  /**
+ * Redis instance subpaths. Have to be numbers between 0-15
+ * Celery config requires redis:// before url, cache config does not
+ */
+
+  static readonly redisCeleryPathZaak = '/1';
+
+  static readonly redisCachePathObjects = '/0';
+  static readonly redisCeleryPathObjects = '/10';
+
+  static readonly redisCachePathObjectsTypes = '/3';
+
+  static readonly redisCachePathKlant = '/4';
+  static readonly redisCeleryPathKlant = '/5';
+
+  //static readonly redisCachePathNotifications = '/geen-subpath';
+  static readonly redisCeleryPathNotifications = '/2';
+
 }
