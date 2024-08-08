@@ -56,11 +56,11 @@ async function createObjecttypeVersion(objecttypeUuid:string, schema: any): Prom
 }
 
 
-export async function run() {
-  const schema = readFileSync('./scripts/taakSchema.json', {
+export async function publihsObjecttype(filePath: string, name: string) {
+  const schema = readFileSync(filePath, {
     encoding: 'utf-8',
   });
-  const objecttype = await createObjecttype('submission');
+  const objecttype = await createObjecttype(name);
   console.log(objecttype);
   await createObjecttypeVersion(objecttype, JSON.parse(schema));
 }

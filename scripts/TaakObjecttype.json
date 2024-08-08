@@ -1,0 +1,99 @@
+{
+  "type": "object",
+  "title": "ObjectType Taak",
+  "examples": [
+    {
+      "data": {
+        "voornaam": "Jan",
+        "achternaam": "Smit",
+        "toestemming": true,
+        "geboortedatum": "01-01-1970"
+      },
+      "zaak": "https://openzaak.gemeente.nl/zaken/api/v1/zaken/5551a7c5-4e92-43e6-8d23-80359b7e22b7",
+      "title": "Check loan",
+      "status": "open",
+      "formulier": {
+        "type:": "url",
+        "value": "http://localhost:8010/api/v2/objects/4e40fb4c-a29a-4e48-944b-c34a1ff6c8f4"
+      },
+      "verloopdatum": "2023-09-20T18:25:43.524Z",
+      "identificatie": {
+        "type": "bsn",
+        "value": "82395551"
+      },
+      "verzonden_data": {
+        "voornaam": "Jan",
+        "achternaam": "Smit",
+        "toestemming": false,
+        "geboortedatum": "01-01-1971"
+      },
+      "verwerker_taak_id": "18af0b6a-967b-4f81-bb8e-a44988e0c2f0"
+    }
+  ],
+  "required": [
+    "identificatie",
+    "formulier",
+    "verwerker_taak_id",
+    "status"
+  ],
+  "properties": {
+    "data": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "zaak": {
+      "type": "string",
+      "format": "uri"
+    },
+    "title": {
+      "type": "string"
+    },
+    "status": {
+      "enum": [
+        "open",
+        "ingediend",
+        "verwerkt",
+        "gesloten"
+      ],
+      "type": "string"
+    },
+    "formulier": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "enum": [
+            "id",
+            "url"
+          ],
+          "type": "string"
+        },
+        "value": {
+          "type": "string"
+        }
+      }
+    },
+    "verloopdatum": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "identificatie": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string"
+        }
+      }
+    },
+    "verzonden_data": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "verwerker_taak_id": {
+      "type": "string",
+      "format": "uuid"
+    }
+  }
+}

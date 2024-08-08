@@ -1,7 +1,7 @@
 import 'dotenv/config';
 import { describeLocalScripts } from './describeLocalScripts';
 import { createEnkelVoudigInformatieObject } from '../scripts/CreateDocument';
-import { run } from '../scripts/CreateObjecttypes';
+import { publihsObjecttype } from '../scripts/CreateObjecttypes';
 import { addStatusToZaak, createZaak } from '../scripts/CreateZaak';
 import { generateCatalogus } from '../scripts/GenerateCatalogus';
 
@@ -23,7 +23,7 @@ describeLocalScripts('local-scripts', () => {
 
 
   test('Run', async () => {
-    await run();
+    await publihsObjecttype('./scripts/TaakObjecttype.json', 'task');
   });
 
   // test('run', async () => {
