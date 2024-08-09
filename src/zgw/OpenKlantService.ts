@@ -30,9 +30,7 @@ export class OpenKlantService extends ComposedZgwService {
           port: OpenKlantService.PORT,
           priority: 24, // Note must be unique across all alb rules
         },
-        // Note: DB should be created before this command can run
-        // Note2: can only be run once, a second time will fail and prevent the container from starting
-        // Note 3: new option, use env https://stackoverflow.com/questions/26963444/django-create-superuser-from-batch-file
+        // Note: use env vars in combinations with the below command https://stackoverflow.com/questions/26963444/django-create-superuser-from-batch-file
         initContainerCommand: ['python', 'src/manage.py', 'createsuperuser', '--no-input', '--skip-checks'],
       }),
     );
@@ -76,6 +74,7 @@ export class OpenKlantService extends ComposedZgwService {
       CELERY_LOGLEVEL: 'DEBUG',
 
       // Generic super user creation?
+      // I think this works with running the createsuperuser command?
       DJANGO_SUPERUSER_USERNAME: 'admin',
       DJANGO_SUPERUSER_EMAIL: 'admin@example.com',
       DJANGO_SUPERUSER_PASSWORD: 'admin',
