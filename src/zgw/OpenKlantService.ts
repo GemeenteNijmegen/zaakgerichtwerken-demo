@@ -76,6 +76,14 @@ export class OpenKlantService extends ComposedZgwService {
       DJANGO_SUPERUSER_USERNAME: 'admin',
       DJANGO_SUPERUSER_EMAIL: 'admin@example.com',
       DJANGO_SUPERUSER_PASSWORD: 'admin',
+
+      // EMAIL configuration
+      EMAIL_HOST_USER: 'AKIAQXFMPHNLX5XLJN6A',
+      EMAIL_HOST_PASSWORD: 'BMpIXsHTKR4k57HLOaYYXBRFU6DgzQiXHGY8984xBt52',
+      EMAIL_PORT: 465, // Or 2465
+      EMAIL_HOST: 'email.eu-central-1.amazonaws.com',
+      EMAIL_USE_TLS: 'True',
+      DEFAULT_FROM_EMAIL: 'test@sandbox-marnix.csp-nijmegen.nl',
     };
     return environment;
   }
