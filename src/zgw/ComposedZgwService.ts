@@ -95,6 +95,7 @@ export abstract class ComposedZgwService extends Construct {
       ],
       resources: [
         this.databaseCredentials.secretArn,
+        this.smtpCredentials.secretArn,
       ],
     }));
     this.databaseCredentials.grantRead(service.taskDefinition.executionRole!);
