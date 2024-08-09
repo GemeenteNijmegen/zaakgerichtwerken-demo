@@ -30,7 +30,8 @@ export class OpenKlantService extends ComposedZgwService {
           port: OpenKlantService.PORT,
           priority: 24, // Note must be unique across all alb rules
         },
-        initContainerCommand: ['python', 'src/manage.py', 'createsuperuser', '--no-input', '--username', 'mdessing2', '--email', 'm.dessing@nijmegen.nl', '--skip-checks'],
+        // Note: DB should be created before this command can run
+        // initContainerCommand: ['python', 'src/manage.py', 'createsuperuser', '--no-input', '--username', 'mdessing', '--email', 'm.dessing@nijmegen.nl', '--skip-checks'],
       }),
     );
 
