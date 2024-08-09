@@ -342,13 +342,13 @@
       },
       "steps": [
         {
-          "exec": "npx npm-check-updates@16 --upgrade --target=minor --peer --dep=dev,peer,prod,optional --filter=@gemeentenijmegen/aws-constructs,@gemeentenijmegen/projen-project-type,@types/jest,@types/pg,dotenv,esbuild,eslint-import-resolver-typescript,eslint-plugin-import,jest,projen,ts-jest,ts-node,typescript,@aws/pdk,@types/jsonwebtoken,jsonwebtoken,pg"
+          "exec": "npx npm-check-updates@16 --upgrade --target=minor --peer --dep=dev,peer,prod,optional --filter=@gemeentenijmegen/aws-constructs,@gemeentenijmegen/projen-project-type,@types/aws-lambda,@types/jest,@types/pg,dotenv,esbuild,eslint-import-resolver-typescript,eslint-plugin-import,jest,projen,ts-jest,ts-node,typescript,@aws/pdk,@types/jsonwebtoken,jsonwebtoken,pg"
         },
         {
           "exec": "yarn install --check-files"
         },
         {
-          "exec": "yarn upgrade @gemeentenijmegen/aws-constructs @gemeentenijmegen/projen-project-type @types/jest @types/node @types/pg @typescript-eslint/eslint-plugin @typescript-eslint/parser aws-cdk dotenv esbuild eslint-import-resolver-typescript eslint-plugin-import eslint jest jest-junit projen standard-version ts-jest ts-node typescript @aws/pdk @types/jsonwebtoken aws-cdk-lib constructs jsonwebtoken pg"
+          "exec": "yarn upgrade @gemeentenijmegen/aws-constructs @gemeentenijmegen/projen-project-type @types/aws-lambda @types/jest @types/node @types/pg @typescript-eslint/eslint-plugin @typescript-eslint/parser aws-cdk dotenv esbuild eslint-import-resolver-typescript eslint-plugin-import eslint jest jest-junit projen standard-version ts-jest ts-node typescript @aws/pdk @types/jsonwebtoken aws-cdk-lib constructs jsonwebtoken pg"
         },
         {
           "exec": "npx projen"

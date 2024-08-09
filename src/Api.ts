@@ -26,7 +26,9 @@ export class CallbackApi extends Construct {
       description: 'Test api notification subscriptions',
     });
     const lambdaIntegration = new LambdaIntegration(testSubscriptionFunction);
-    resource.addMethod('GET', lambdaIntegration, { apiKeyRequired: true });
+    resource.addMethod('POST', lambdaIntegration, {
+      apiKeyRequired: false, // Validated in lambda as we need to use the authorization header instead of the x-api-key header which is required for the api key...
+    });
 
   }
 

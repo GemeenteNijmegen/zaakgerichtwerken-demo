@@ -36,6 +36,7 @@
   "devDependencies": {
     "@gemeentenijmegen/aws-constructs": "^0.0.5",
     "@gemeentenijmegen/projen-project-type": "^1.5.5",
+    "@types/aws-lambda": "^8.10.143",
     "@types/jest": "^29.5.12",
     "@types/node": "^18",
     "@types/pg": "^8.11.6",
