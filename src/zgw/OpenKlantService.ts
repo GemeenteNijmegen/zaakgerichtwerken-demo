@@ -32,7 +32,8 @@ export class OpenKlantService extends ComposedZgwService {
         },
         // Note: DB should be created before this command can run
         // Note2: can only be run once, a second time will fail and prevent the container from starting
-        // initContainerCommand: ['python', 'src/manage.py', 'createsuperuser', '--no-input', '--username', 'mdessing', '--email', 'm.dessing@nijmegen.nl', '--skip-checks'],
+        // Note 3: new option, use env https://stackoverflow.com/questions/26963444/django-create-superuser-from-batch-file
+        initContainerCommand: ['python', 'src/manage.py', 'createsuperuser', '--no-input', '--skip-checks'],
       }),
     );
 
