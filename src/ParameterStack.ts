@@ -25,6 +25,7 @@ export class ParameterStack extends Stack {
 
 
     this.setDatabaseCredentials();
+    this.setSmtpCredentials();
 
   }
 
@@ -39,6 +40,20 @@ export class ParameterStack extends Stack {
     new StringParameter(this, 'db-credentials-arn', {
       stringValue: dbCredentials.secretArn,
       parameterName: Statics.ssmDbCredentialsArn,
+    });
+  }
+
+  setSmtpCredentials() {
+    const creds = new Secret(this, 'smtp-credentials', {
+      generateSecretString: {
+        secretStringTemplate: JSON.stringify({ username: 'AKIAQXFMPHNLX5XLJN6A' }),
+        generateStringKey: 'password',
+        excludePunctuation: true,
+      },
+    });
+    new StringParameter(this, 'smtp-credentials-arn', {
+      stringValue: creds.secretArn,
+      parameterName: Statics.ssmSmtpCredentialsArn,
     });
   }
 

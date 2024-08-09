@@ -34,6 +34,7 @@ export abstract class ComposedZgwService extends Construct {
 
   protected readonly props: ComposedZgwServiceProps;
   protected readonly databaseCredentials: ISecret;
+  protected readonly smtpCredentials: ISecret;
 
   private readonly zgwServices: Record<string, ZgwService> = {};
   private privateFileSystemConfig?: EfsVolumeConfiguration;
@@ -45,6 +46,7 @@ export abstract class ComposedZgwService extends Construct {
     super(scope, id);
     this.props = props;
     this.databaseCredentials = this.loadDatabaseCredentials();
+    this.smtpCredentials = this.loadSmtpCredentials();
 
     if (props.createFileSystem) {
       this.createFileSytem();
@@ -58,6 +60,11 @@ export abstract class ComposedZgwService extends Construct {
   private loadDatabaseCredentials() {
     const arn = StringParameter.valueForStringParameter(this, Statics.ssmDbCredentialsArn);
     return Secret.fromSecretCompleteArn(this, 'db-credentials', arn);
+  }
+
+  private loadSmtpCredentials() {
+    const arn = StringParameter.valueForStringParameter(this, Statics.ssmSmtpCredentialsArn);
+    return Secret.fromSecretCompleteArn(this, 'smtp-credentials', arn);
   }
 
   protected setupServiceConnectivity(name: string, service: FargateService) {

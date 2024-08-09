@@ -30,7 +30,7 @@ export class OpenKlantService extends ComposedZgwService {
           port: OpenKlantService.PORT,
           priority: 24, // Note must be unique across all alb rules
         },
-        // initContainerCommand: ['/setup_configuration.sh'], // TODO not setup required?
+        initContainerCommand: ['python', 'src/manage.py', 'createsuperuser', '--no-input', '--username', 'mdessing', '--email', 'm.dessing@nijmegen.nl', '--skip-checks'],
       }),
     );
 
@@ -78,8 +78,6 @@ export class OpenKlantService extends ComposedZgwService {
       DJANGO_SUPERUSER_PASSWORD: 'admin',
 
       // EMAIL configuration
-      EMAIL_HOST_USER: 'AKIAQXFMPHNLX5XLJN6A',
-      EMAIL_HOST_PASSWORD: 'BMpIXsHTKR4k57HLOaYYXBRFU6DgzQiXHGY8984xBt52',
       EMAIL_PORT: '465', // Or 2465
       EMAIL_HOST: 'email.eu-central-1.amazonaws.com',
       EMAIL_USE_TLS: 'True',
@@ -92,6 +90,8 @@ export class OpenKlantService extends ComposedZgwService {
     const secrets = {
       DB_PASSWORD: ecs.Secret.fromSecretsManager(this.databaseCredentials, 'password'),
       DB_USER: ecs.Secret.fromSecretsManager(this.databaseCredentials, 'username'),
+      EMAIL_HOST_USER: ecs.Secret.fromSecretsManager(this.smtpCredentials, 'username'),
+      EMAIL_HOST_PASSWORD: ecs.Secret.fromSecretsManager(this.smtpCredentials, 'password'),
     };
     return secrets;
   }

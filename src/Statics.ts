@@ -10,6 +10,7 @@ export class Statics {
 
   static readonly ssmDbSecretArn = `/${this.projectName}/db/secret/arn`;
   static readonly ssmDbCredentialsArn = `/${this.projectName}/db/credentials/arn`;
+  static readonly ssmSmtpCredentialsArn = `/${this.projectName}/smtp/credentials/arn`;
   static readonly ssmDbArn = `/${this.projectName}/db/arn`;
   static readonly ssmDbHostname = `/${this.projectName}/db/hostname`;
   static readonly ssmDbPort = `/${this.projectName}/db/port`;
