@@ -67,24 +67,15 @@ export class OpenKlantService extends ComposedZgwService {
       LOG_QUERIES: 'False',
       DEBUG: 'True',
 
-      // Required demo stuff?
-      DEMO_TOKEN: 'DemoToken',
-      DEMO_PERSON: 'DemoPerson',
-      DEMO_EMAIL: 'objects@objects.local',
-
-      OBJECTS_DOMAIN: this.props.zgwCluster.alb.getDomain(),
-      OBJECTS_ORGANIZATION: 'OZ',
-      OBJECTS_OBJECTTYPES_TOKEN: 'some-random-string',
-      OBJECTTYPES_API_ROOT: `https://${this.props.zgwCluster.alb.getDomain()}/objecttypes/api/v2/`,
-
-      // Setup admin user on boot
-      OBJECTS_SUPERUSER_USERNAME: 'admin',
-      OBJECTS_SUPERUSER_PASSWORD: 'admin',
-
       // Celery
       CELERY_BROKER_URL: 'redis://'+this.props.zgwCluster.redis.redisCluster.attrRedisEndpointAddress + ':' + this.props.zgwCluster.redis.redisCluster.attrRedisEndpointPort + Statics.redisCeleryPathKlant,
       CELERY_RESULT_BACKEND: 'redis://'+this.props.zgwCluster.redis.redisCluster.attrRedisEndpointAddress + ':' + this.props.zgwCluster.redis.redisCluster.attrRedisEndpointPort + Statics.redisCeleryPathKlant,
       CELERY_LOGLEVEL: 'DEBUG',
+
+      // Generic super user creation?
+      DJANGO_SUPERUSER_USERNAME: 'admin',
+      DJANGO_SUPERUSER_EMAIL: 'admin@example.com',
+      DJANGO_SUPERUSER_PASSWORD: 'admin',
     };
     return environment;
   }
