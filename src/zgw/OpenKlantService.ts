@@ -80,7 +80,7 @@ export class OpenKlantService extends ComposedZgwService {
       // EMAIL configuration
       EMAIL_HOST_USER: 'AKIAQXFMPHNLX5XLJN6A',
       EMAIL_HOST_PASSWORD: 'BMpIXsHTKR4k57HLOaYYXBRFU6DgzQiXHGY8984xBt52',
-      EMAIL_PORT: 465, // Or 2465
+      EMAIL_PORT: '465', // Or 2465
       EMAIL_HOST: 'email.eu-central-1.amazonaws.com',
       EMAIL_USE_TLS: 'True',
       DEFAULT_FROM_EMAIL: 'test@sandbox-marnix.csp-nijmegen.nl',
