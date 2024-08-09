@@ -5,6 +5,7 @@ import {
 } from 'aws-cdk-lib';
 import { Port } from 'aws-cdk-lib/aws-ec2';
 import { Construct } from 'constructs';
+import { CallbackApi } from './Api';
 import { DnsConstruct } from './constructs/DnsConstruct';
 import { VpcConstruct } from './constructs/VpcConstruct';
 import { ZgwCluster } from './constructs/ZgwCluster';
@@ -32,6 +33,13 @@ export class ContainerClusterStack extends Stack {
 
     this.subdomain = new DnsConstruct(this, 'subdomain', {
       subdomain: 'zgw',
+    });
+
+    /**
+     * API for callbacks of event subscriptions in the notifications-api
+     */
+    new CallbackApi(this, 'callbacks', {
+      subdomain: this.subdomain,
     });
 
     /**

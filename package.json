@@ -8,6 +8,8 @@
     "bundle:lambdas/efs/efs.lambda:watch": "npx projen bundle:lambdas/efs/efs.lambda:watch",
     "bundle:lambdas/postgres/postgres.lambda": "npx projen bundle:lambdas/postgres/postgres.lambda",
     "bundle:lambdas/postgres/postgres.lambda:watch": "npx projen bundle:lambdas/postgres/postgres.lambda:watch",
+    "bundle:lambdas/test-subsciption/test-subscription.lambda": "npx projen bundle:lambdas/test-subsciption/test-subscription.lambda",
+    "bundle:lambdas/test-subsciption/test-subscription.lambda:watch": "npx projen bundle:lambdas/test-subsciption/test-subscription.lambda:watch",
     "clobber": "npx projen clobber",
     "compile": "npx projen compile",
     "default": "npx projen default",

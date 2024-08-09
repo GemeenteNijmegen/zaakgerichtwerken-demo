@@ -60,6 +60,7 @@ junit.xml
 .parcel-cache/
 !/src/lambdas/efs/efs-function.ts
 !/src/lambdas/postgres/postgres-function.ts
+!/src/lambdas/test-subsciption/test-subscription-function.ts
 !/.github/workflows/emergency.yml
 !/.github/workflows/auto-merge.yml
 !/.projenrc.ts

@@ -50,6 +50,9 @@
         },
         {
           "spawn": "bundle:lambdas/postgres/postgres.lambda"
+        },
+        {
+          "spawn": "bundle:lambdas/test-subsciption/test-subscription.lambda"
         }
       ]
     },
@@ -86,6 +89,24 @@
       "steps": [
         {
           "exec": "esbuild --bundle src/lambdas/postgres/postgres.lambda.ts --target=\"node20\" --platform=\"node\" --outfile=\"assets/lambdas/postgres/postgres.lambda/index.js\" --tsconfig=\"tsconfig.dev.json\" --external:@aws-sdk/* --watch"
+        }
+      ]
+    },
+    "bundle:lambdas/test-subsciption/test-subscription.lambda": {
+      "name": "bundle:lambdas/test-subsciption/test-subscription.lambda",
+      "description": "Create a JavaScript bundle from src/lambdas/test-subsciption/test-subscription.lambda.ts",
+      "steps": [
+        {
+          "exec": "esbuild --bundle src/lambdas/test-subsciption/test-subscription.lambda.ts --target=\"node20\" --platform=\"node\" --outfile=\"assets/lambdas/test-subsciption/test-subscription.lambda/index.js\" --tsconfig=\"tsconfig.dev.json\" --external:@aws-sdk/*"
+        }
+      ]
+    },
+    "bundle:lambdas/test-subsciption/test-subscription.lambda:watch": {
+      "name": "bundle:lambdas/test-subsciption/test-subscription.lambda:watch",
+      "description": "Continuously update the JavaScript bundle from src/lambdas/test-subsciption/test-subscription.lambda.ts",
+      "steps": [
+        {
+          "exec": "esbuild --bundle src/lambdas/test-subsciption/test-subscription.lambda.ts --target=\"node20\" --platform=\"node\" --outfile=\"assets/lambdas/test-subsciption/test-subscription.lambda/index.js\" --tsconfig=\"tsconfig.dev.json\" --external:@aws-sdk/* --watch"
         }
       ]
     },

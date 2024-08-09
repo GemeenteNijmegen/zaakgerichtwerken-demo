@@ -18,6 +18,7 @@
     "LICENSE",
     "src/lambdas/efs/efs-function.ts",
     "src/lambdas/postgres/postgres-function.ts",
+    "src/lambdas/test-subsciption/test-subscription-function.ts",
     "tsconfig.dev.json",
     "tsconfig.json"
   ],

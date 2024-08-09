@@ -150,6 +150,7 @@
           "**/build-tools/**",
           "src/lambdas/efs/efs.lambda.ts",
           "src/lambdas/postgres/postgres.lambda.ts",
+          "src/lambdas/test-subsciption/test-subscription.lambda.ts",
           ".projenrc.ts",
           "projenrc/**/*.ts"
         ],

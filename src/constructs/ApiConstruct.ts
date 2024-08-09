@@ -15,6 +15,11 @@ interface ApiConstructProps {
 }
 
 
+/**
+ * Currently not used as it did not play nicely with the loadbalancer.
+ * Note another API construct is used for a separate API that has nothing
+ * to do with the loadbalancer.
+ */
 export class ApiConstruct extends Construct {
 
   readonly api: RestApi;
