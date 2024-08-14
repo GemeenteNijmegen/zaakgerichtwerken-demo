@@ -25,13 +25,15 @@ export class OpenKlantService extends ComposedZgwService {
         environment: this.getEnvironmentConfiguration(),
         secrets: this.getSecretConfiguration(),
         zgwCluster: props.zgwCluster,
+        desiredtaskcount: 1,
         expose: {
           path: 'open-klant',
           port: OpenKlantService.PORT,
           priority: 24, // Note must be unique across all alb rules
         },
         // Note: use env vars in combinations with the below command https://stackoverflow.com/questions/26963444/django-create-superuser-from-batch-file
-        initContainerCommand: ['python', 'src/manage.py', 'createsuperuser', '--no-input', '--skip-checks'],
+        // Note command can only run once: 'CommandError: Error: That gebruikersnaam is already taken.'
+        // initContainerCommand: ['python', 'src/manage.py', 'createsuperuser', '--no-input', '--skip-checks'],
       }),
     );
 
