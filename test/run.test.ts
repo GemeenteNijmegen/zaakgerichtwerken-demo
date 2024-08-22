@@ -4,6 +4,7 @@ import { createEnkelVoudigInformatieObject } from '../scripts/CreateDocument';
 import { publihsObjecttype } from '../scripts/CreateObjecttypes';
 import { addStatusToZaak, createZaak } from '../scripts/CreateZaak';
 import { generateCatalogus } from '../scripts/GenerateCatalogus';
+import { maakOrganisatieAan, maakOrganisatieIdentificatieAan, maakPersoonAan, maakPersoonIdentificatieAan, voorkeurEmailOpslaan } from '../scripts/VoorkeurOpslaan';
 
 
 describeLocalScripts('local-scripts', () => {
@@ -30,6 +31,20 @@ describeLocalScripts('local-scripts', () => {
   //   const zaak = await createZaakFromForm();
   //   await addStatusToZaak(zaak, 'https://lb.zgw.sandbox-marnix.csp-nijmegen.nl/open-zaak/catalogi/api/v1/statustypen/2e0edc16-fb56-4b3d-a227-3874d01003f5');
   // });
+
+  test('OpenKlant persoon script', async () => {
+    const bsn = '900026236';
+    const partijUuid = await maakPersoonAan();
+    await maakPersoonIdentificatieAan(partijUuid, bsn);
+    await voorkeurEmailOpslaan(partijUuid, 'mail@example.com');
+  });
+
+  test('OpenKlant organisatie script', async () => {
+    const kvk = '69599084';
+    const partijUuid = await maakOrganisatieAan();
+    await maakOrganisatieIdentificatieAan(partijUuid, kvk);
+    await voorkeurEmailOpslaan(partijUuid, 'mail@example.com');
+  });
 
 });
 

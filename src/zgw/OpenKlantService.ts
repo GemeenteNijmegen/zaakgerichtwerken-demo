@@ -20,7 +20,7 @@ export class OpenKlantService extends ComposedZgwService {
     this.registerZgwService(
       'open-klant',
       new ZgwService(this, 'open-klant', {
-        containerImage: 'maykinmedia/open-klant',
+        containerImage: 'maykinmedia/open-klant:2.1.0',
         databaseCredentials: this.databaseCredentials,
         environment: this.getEnvironmentConfiguration(),
         secrets: this.getSecretConfiguration(),
@@ -40,7 +40,7 @@ export class OpenKlantService extends ComposedZgwService {
     this.registerZgwService(
       'open-klant-celery',
       new ZgwService(this, 'open-klant-celery', {
-        containerImage: 'maykinmedia/open-klant',
+        containerImage: 'maykinmedia/open-klant:2.1.0',
         databaseCredentials: this.databaseCredentials,
         environment: this.getEnvironmentConfiguration(),
         secrets: this.getSecretConfiguration(),
